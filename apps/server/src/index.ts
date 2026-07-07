@@ -1,12 +1,17 @@
-import { auth } from "@better-t-stack-template/auth";
-import { env } from "@better-t-stack-template/env/server";
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { logger } from "hono/logger";
+import { auth } from "@better-t-stack-template/auth"
+import { env } from "@better-t-stack-template/env/server"
+import { cors } from "hono/cors"
 
-const app = new Hono();
+import createApp from "~/lib/create-app"
+import index from "~/routes/index.route"
+import tasks from "~/routes/tasks/tasks.index"
 
-app.use(logger());
+import configureOpenAPI from "./lib/configure-open-api"
+
+const app = createApp()
+
+configureOpenAPI(app)
+
 app.use(
   "/*",
   cors({
@@ -15,12 +20,20 @@ app.use(
     allowHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   }),
-);
+)
 
-app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+app.on(["POST", "GET"], "/api/auth/*", (c) =>
+  auth.handler(c.req.raw),
+)
 
-app.get("/", (c) => {
-  return c.text("OK");
-});
+const routes = [index, tasks] as const
 
-export default app;
+routes.forEach((route) => {
+  app.route("/", route)
+})
+
+// app.get("/", (c) => {
+//   return c.text("OK")
+// })
+
+export default app
