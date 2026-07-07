@@ -26,6 +26,7 @@
   "scripts": {
     "dev": "vp run -r dev",
     "build": "vp run -r build",
+    "test": "vp run -r test",
     "check-types": "vp run -r check-types",
     "check": "oxlint && oxfmt --write",
     "lint": "vp lint",
@@ -51,6 +52,7 @@
   "devDependencies": {
     "@better-t-stack-template/config": "workspace:*",
     "@types/bun": "catalog:",
+    "eslint-plugin-perfectionist": "^5.10.0",
     "oxfmt": "^0.53.0",
     "oxlint": "^1.68.0",
     "rolldown": "1.1.0",
