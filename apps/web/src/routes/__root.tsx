@@ -1,34 +1,40 @@
-import { Toaster } from "@better-t-stack-template/ui/components/sonner";
-import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { Toaster } from "@better-t-stack-template/ui/components/sonner"
+import {
+  HeadContent,
+  Outlet,
+  createRootRouteWithContext,
+} from "@tanstack/react-router"
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 
-import Header from "@/components/header";
-import { ThemeProvider } from "@/components/theme-provider";
+import Header from "@/components/header"
+import { ThemeProvider } from "@/components/theme-provider"
 
-import "../index.css";
+import "../index.css"
 
 export interface RouterAppContext {}
 
-export const Route = createRootRouteWithContext<RouterAppContext>()({
-  component: RootComponent,
-  head: () => ({
-    meta: [
-      {
-        title: "better-t-stack-template",
-      },
-      {
-        name: "description",
-        content: "better-t-stack-template is a web application",
-      },
-    ],
-    links: [
-      {
-        rel: "icon",
-        href: "/favicon.ico",
-      },
-    ],
-  }),
-});
+export const Route =
+  createRootRouteWithContext<RouterAppContext>()({
+    component: RootComponent,
+    head: () => ({
+      meta: [
+        {
+          title: "better-t-stack-template",
+        },
+        {
+          name: "description",
+          content:
+            "better-t-stack-template is a web application",
+        },
+      ],
+      links: [
+        {
+          rel: "icon",
+          href: "/favicon.ico",
+        },
+      ],
+    }),
+  })
 
 function RootComponent() {
   return (
@@ -48,5 +54,5 @@ function RootComponent() {
       </ThemeProvider>
       <TanStackRouterDevtools position="bottom-left" />
     </>
-  );
+  )
 }

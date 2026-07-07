@@ -1,9 +1,12 @@
-"use client";
+"use client"
 
-import { cn } from "@better-t-stack-template/ui/lib/utils";
-import * as React from "react";
+import { cn } from "@better-t-stack-template/ui/lib/utils"
+import * as React from "react"
 
-function Label({ className, ...props }: React.ComponentProps<"label">) {
+function Label({
+  className,
+  ...props
+}: React.ComponentProps<"label">) {
   return (
     <label
       data-slot="label"
@@ -13,7 +16,7 @@ function Label({ className, ...props }: React.ComponentProps<"label">) {
       )}
       {...props}
     />
-  );
+  )
 }
 
-export { Label };
+export { Label }

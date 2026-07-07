@@ -1,11 +1,11 @@
-import { createDb } from "@better-t-stack-template/db";
-import * as schema from "@better-t-stack-template/db/schema/auth";
-import { env } from "@better-t-stack-template/env/server";
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { createDb } from "@better-t-stack-template/db"
+import * as schema from "@better-t-stack-template/db/schema/auth"
+import { env } from "@better-t-stack-template/env/server"
+import { betterAuth } from "better-auth"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
 export function createAuth() {
-  const db = createDb();
+  const db = createDb()
 
   return betterAuth({
     database: drizzleAdapter(db, {
@@ -27,7 +27,7 @@ export function createAuth() {
       },
     },
     plugins: [],
-  });
+  })
 }
 
-export const auth = createAuth();
+export const auth = createAuth()

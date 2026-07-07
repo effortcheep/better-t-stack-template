@@ -1,4 +1,7 @@
 {
   "semi": false,
+  "sortImports": true,
+  "printWidth": 60,
+  "chainWidth": 2,
   "ignorePatterns": []
 }

@@ -11,7 +11,9 @@
     "rootDirs": ["."],
     "paths": {
       "@/*": ["./src/*"],
-      "@better-t-stack-template/ui/*": ["../../packages/ui/src/*"]
+      "@better-t-stack-template/ui/*": [
+        "../../packages/ui/src/*"
+      ]
     }
   }
 }

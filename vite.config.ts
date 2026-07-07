@@ -1,4 +1,4 @@
-import { defineConfig } from "vite-plus";
+import { defineConfig } from "vite-plus"
 
 export default defineConfig({
   lint: {
@@ -27,10 +27,11 @@ export default defineConfig({
       "packages/db/dist/**",
     ],
     singleQuote: false,
-    semi: true,
+    semi: false,
     sortPackageJson: true,
   },
   staged: {
-    "*.{js,ts,jsx,tsx,vue,svelte,json,jsonc,css,md}": "vp check --fix",
+    "*.{js,ts,jsx,tsx,vue,svelte,json,jsonc,css,md}":
+      "vp check --fix",
   },
-});
+})

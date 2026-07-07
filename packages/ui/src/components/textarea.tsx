@@ -1,7 +1,10 @@
-import { cn } from "@better-t-stack-template/ui/lib/utils";
-import * as React from "react";
+import { cn } from "@better-t-stack-template/ui/lib/utils"
+import * as React from "react"
 
-function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
+function Textarea({
+  className,
+  ...props
+}: React.ComponentProps<"textarea">) {
   return (
     <textarea
       data-slot="textarea"
@@ -11,7 +14,7 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
       )}
       {...props}
     />
-  );
+  )
 }
 
-export { Textarea };
+export { Textarea }
