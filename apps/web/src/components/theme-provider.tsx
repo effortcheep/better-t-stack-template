@@ -1,5 +1,4 @@
 import { ThemeProvider as NextThemesProvider } from "next-themes"
-import * as React from "react"
 
 export function ThemeProvider({
   children,
@@ -11,5 +10,3 @@ export function ThemeProvider({
     </NextThemesProvider>
   )
 }
-
-export { useTheme } from "next-themes"

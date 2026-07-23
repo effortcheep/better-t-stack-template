@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Template UI 预览（含审核状态 · 头部统一）</title>
+    <style>
+      :root {
+        --bg: oklch(0.99 0 0);
+        --card: oklch(1 0 0);
+        --border: oklch(0.92 0 0);
+        --muted: oklch(0.97 0 0);
+        --fg: oklch(0.22 0.01 260);
+        --muted-fg: oklch(0.55 0.01 260);
+        --primary: oklch(0.55 0.18 280);
+        --primary-fg: oklch(0.99 0 0);
+        --destructive: oklch(0.58 0.22 25);
+        --amber: oklch(0.7 0.15 75);
+        --emerald: oklch(0.65 0.16 150);
+        --radius: 14px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        padding: 28px 16px 64px;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+      h1.page-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
+      .sub { color: var(--muted-fg); font-size: 13px; margin: 0 0 8px; }
+      .header {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px; margin-bottom: 4px;
+      }
+      .header .left { display: flex; align-items: center; gap: 10px; }
+      .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted-fg); }
+      .breadcrumb a { color: var(--muted-fg); text-decoration: none; }
+      .breadcrumb .cur { color: var(--fg); font-weight: 600; }
+      .breadcrumb .sep { opacity: .5; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
+        border-radius: 9px; padding: 6px 12px; cursor: pointer; border: 1px solid transparent;
+      }
+      .btn-ghost { background: transparent; color: var(--fg); border-color: transparent; }
+      .btn-ghost:hover { background: var(--muted); }
+      .btn-outline { background: var(--card); border-color: var(--border); }
+      .btn-primary { background: var(--primary); color: var(--primary-fg); }
+      .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+      .card-head { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--border); }
+      .ic {
+        width: 36px; height: 36px; flex: 0 0 auto; border-radius: 10px;
+        display: grid; place-items: center; background: color-mix(in oklch, var(--primary) 12%, white);
+        color: var(--primary); font-size: 16px;
+      }
+      .card-head h3 { margin: 0; font-size: 15px; }
+      .card-head p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted-fg); }
+      .card-head .actions { margin-left: auto; display: flex; gap: 8px; }
+      .card-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+      .row { display: grid; grid-template-columns: 140px 1fr; gap: 14px; align-items: start; }
+      .row .lab { font-size: 13px; color: var(--muted-fg); padding-top: 8px; }
+      .field { display: flex; flex-direction: column; gap: 6px; }
+      .field label { font-size: 13px; font-weight: 500; }
+      .input, .select, .textarea {
+        width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px;
+        font-size: 13px; background: var(--card); color: var(--fg);
+      }
+      .textarea { min-height: 86px; resize: vertical; }
+      .hint { font-size: 12px; color: var(--muted-fg); }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .radio-row { display: flex; gap: 18px; padding-top: 6px; }
+      .radio { display: flex; align-items: center; gap: 7px; font-size: 13px; }
+      .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border); }
+      .checkbox { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+      .switch { width: 38px; height: 22px; border-radius: 999px; background: var(--muted); position: relative; }
+      .switch.on { background: var(--primary); }
+      .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: .15s; }
+      .switch.on::after { left: 18px; }
+      .drop {
+        border: 2px dashed var(--border); border-radius: 12px; padding: 14px; display: flex; gap: 12px; align-items: center;
+      }
+      .thumb { width: 56px; height: 56px; border-radius: 10px; background: var(--muted); display: grid; place-items: center; font-size: 20px; }
+      .badges { display: flex; flex-wrap: wrap; gap: 6px; }
+      .badge {
+        display: inline-flex; align-items: center; height: 20px; padding: 0 9px; border-radius: 999px;
+        font-size: 12px; font-weight: 600; border: 1px solid transparent;
+      }
+      .b-default { background: color-mix(in oklch, var(--primary) 15%, white); color: var(--primary); }
+      .b-secondary { background: var(--muted); color: var(--muted-fg); }
+      .b-outline { background: transparent; border-color: var(--border); }
+      .b-destructive { background: color-mix(in oklch, var(--destructive) 12%, white); color: var(--destructive); }
+      .b-review-pending { background: var(--muted); color: var(--muted-fg); }
+      .b-review-reviewing { background: color-mix(in oklch, var(--amber) 16%, white); color: var(--amber); }
+      .b-review-approved { background: color-mix(in oklch, var(--emerald) 16%, white); color: var(--emerald); }
+      .b-review-rejected { background: color-mix(in oklch, var(--destructive) 12%, white); color: var(--destructive); }
+      .deflist { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
+      .def .lab { font-size: 12px; color: var(--muted-fg); margin-bottom: 6px; }
+      .def .val { font-size: 13px; }
+      .content-block { background: var(--muted); border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-size: 13px; line-height: 1.6; color: var(--fg); }
+      .sticky-bar {
+        position: sticky; bottom: 12px; background: var(--card); border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 6px 20px rgba(0,0,0,.06);
+      }
+      .section-tag { font-size: 12px; font-weight: 600; color: var(--muted-fg); text-transform: none; }
+      .note { font-size: 12px; color: var(--muted-fg); background: var(--muted); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+      .pill-new::before { content: "●"; margin-right: 6px; color: var(--emerald); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div>
+        <h1 class="page-title">Template 页面预览（本轮改动）</h1>
+        <p class="sub">新增「审核状态」可编辑项 · new / edit / detail 头部与面包屑统一</p>
+      </div>
+
+      <!-- ============ 新建 / 编辑（同一套布局） ============ -->
+      <div>
+        <div class="header">
+          <div class="left">
+            <button class="btn btn-ghost">← 返回</button>
+            <div class="breadcrumb">
+              <a href="#">模板</a><span class="sep">/</span><span class="cur">新建</span>
+            </div>
+          </div>
+        </div>
+        <p class="note" style="margin:8px 0 12px">
+          新建与编辑页共用同一布局：返回(带箭头) + 面包屑 + 图标上下文卡片 + 分区表单。编辑页面包屑为「模板 / 标题 / 编辑」。
+        </p>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="ic">＋</div>
+            <div>
+              <h3>新建模板</h3>
+              <p>填写以下信息创建新的模板条目</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 基本信息 -->
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
+            <div class="ic">📄</div>
+            <div><h3>基本信息</h3><p>标题与正文是模板的核心内容</p></div>
+          </div>
+          <div class="card-body">
+            <div class="field">
+              <label>标题</label>
+              <input class="input" value="更好的 T-Stack 模板" />
+              <span class="hint">2 个字符以上</span>
+            </div>
+            <div class="field">
+              <label>内容</label>
+              <textarea class="textarea">详细内容说明…</textarea>
+              <span class="hint">支持多行文本</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 属性设置（含审核状态） -->
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
+            <div class="ic">⚙</div>
+            <div><h3>属性设置</h3><p>状态、优先级与分类，便于检索与排序</p></div>
+          </div>
+          <div class="card-body">
+            <div class="grid2">
+              <div class="field">
+                <label>状态</label>
+                <div class="select">已发布 ▾</div>
+                <span class="hint">草稿仅在后台可见</span>
+              </div>
+              <div class="field">
+                <label>优先级</label>
+                <div class="radio-row">
+                  <span class="radio"><span class="dot"></span>低</span>
+                  <span class="radio"><span class="dot" style="border-color:var(--primary);background:var(--primary)"></span>中</span>
+                  <span class="radio"><span class="dot"></span>高</span>
+                </div>
+                <span class="hint">决定处理顺序</span>
+              </div>
+            </div>
+
+            <!-- 新增：审核状态（可编辑） -->
+            <div class="field">
+              <label>审核状态</label>
+              <div class="select">待审核 ▾</div>
+              <span class="hint">模板发布前需通过审核</span>
+            </div>
+
+            <div class="field">
+              <label>标签</label>
+              <div style="display:flex;flex-wrap:wrap;gap:14px;padding-top:6px">
+                <span class="checkbox"><span class="dot" style="border-color:var(--primary);background:var(--primary)"></span>React</span>
+                <span class="checkbox"><span class="dot" style="border-color:var(--primary);background:var(--primary)"></span>TypeScript</span>
+                <span class="checkbox"><span class="dot"></span>Tailwind CSS</span>
+                <span class="checkbox"><span class="dot"></span>shadcn/ui</span>
+              </div>
+              <span class="hint">可多选，用于分类筛选</span>
+            </div>
+
+            <div class="field">
+              <label>发布</label>
+              <div style="display:flex;align-items:center;gap:10px;padding-top:6px">
+                <span class="switch"></span>
+                <span style="font-size:13px">未发布</span>
+              </div>
+              <span class="hint">开启后对外可见</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 附件 -->
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
+            <div class="ic">🖼</div>
+            <div><h3>附件</h3><p>为模板添加一张封面图片</p></div>
+          </div>
+          <div class="card-body">
+            <div class="drop">
+              <div class="thumb">⬆</div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500">拖放文件到此处，或点击选择</div>
+                <div class="hint">支持 JPG、PNG，最大 5MB</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sticky-bar" style="margin-top:14px">
+          <span class="hint">有未保存的修改</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost">重置</button>
+            <button class="btn btn-primary">创建模板</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 详情页 ============ -->
+      <div style="margin-top:28px">
+        <div class="header">
+          <div class="left">
+            <button class="btn btn-ghost">← 返回</button>
+            <div class="breadcrumb">
+              <a href="#">模板</a><span class="sep">/</span><span class="cur">更好的 T-Stack 模板</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="card-head" style="flex-wrap:wrap">
+            <div style="flex:1;min-width:240px">
+              <h3 style="font-size:18px">更好的 T-Stack 模板</h3>
+              <div class="hint" style="margin-top:6px">创建于 2026/07/01 · 更新于 2026/07/13</div>
+              <div class="badges" style="margin-top:10px">
+                <span class="badge b-default">已发布</span>
+                <span class="badge b-secondary">中</span>
+                <span class="badge b-secondary">未发布</span>
+                <span class="badge b-review-pending">待审核</span>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-outline">✎ 编辑</button>
+              <button class="btn btn-outline" style="color:var(--destructive)">🗑 删除</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="section-tag" style="margin-bottom:8px">内容</div>
+              <div class="content-block">更好的 T-Stack 模板的详细内容说明…</div>
+            </div>
+            <div>
+              <div class="section-tag" style="margin-bottom:10px">属性</div>
+              <div class="deflist">
+                <div class="def">
+                  <div class="lab">状态</div>
+                  <div class="val"><span class="badge b-default">已发布</span></div>
+                  <div class="hint" style="margin-top:4px">对外可见</div>
+                </div>
+                <div class="def">
+                  <div class="lab">优先级</div>
+                  <div class="val"><span class="badge b-secondary">中</span></div>
+                </div>
+                <div class="def">
+                  <div class="lab">发布状态</div>
+                  <div class="val"><span class="badge b-secondary">未发布</span></div>
+                </div>
+                <!-- 详情页审核状态展示 -->
+                <div class="def">
+                  <div class="lab">审核状态</div>
+                  <div class="val"><span class="badge b-review-pending">待审核</span></div>
+                  <div class="hint" style="margin-top:4px">尚未提交审核</div>
+                </div>
+                <div class="def" style="grid-column:1 / -1">
+                  <div class="lab">标签</div>
+                  <div class="val"><div class="badges">
+                    <span class="badge b-secondary">React</span>
+                    <span class="badge b-secondary">TypeScript</span>
+                  </div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 列表列（审核状态列） ============ -->
+      <div style="margin-top:28px">
+        <div class="section-tag" style="margin-bottom:8px">列表新增「审核状态」列</div>
+        <div class="card">
+          <div class="card-body" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+            <span class="badge b-default">已发布</span>
+            <span class="badge b-secondary">中</span>
+            <span class="badge b-review-reviewing">审核中</span>
+            <span class="badge b-review-approved">审核通过</span>
+            <span class="badge b-review-rejected">审核拒绝</span>
+            <span class="badge b-review-pending">待审核</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

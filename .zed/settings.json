@@ -4,6 +4,13 @@
 // see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
   "lsp": {
+    "css-language-server": {
+      "initialization_options": {
+        "lint": {
+          "unknownAtRules": "ignore"
+        }
+      }
+    },
     "oxlint": {
       "initialization_options": {
         "settings": {
