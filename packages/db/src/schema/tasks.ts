@@ -21,7 +21,7 @@ export const tasks = pgTable("tasks", {
 
 export const selectTasksSchema = createSelectSchema(tasks)
 
-export const inserTasksSchema = createInsertSchema(tasks, {
+export const insertTasksSchema = createInsertSchema(tasks, {
   name: (field) => field.min(1).max(500),
 })
   .required({
@@ -33,4 +33,4 @@ export const inserTasksSchema = createInsertSchema(tasks, {
     updatedAt: true,
   })
 
-export const patchTasksSchema = inserTasksSchema.partial()
+export const patchTasksSchema = insertTasksSchema.partial()
