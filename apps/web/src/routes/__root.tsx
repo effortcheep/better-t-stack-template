@@ -7,8 +7,12 @@ import {
   createRootRouteWithContext,
 } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
+import { Button } from "@better-t-stack-template/ui/components/button"
+import { useNavigate } from "@tanstack/react-router"
 
 import { ThemeProvider } from "@/components/theme-provider"
+import { AppError } from "@/lib/errors"
+import { ErrorPage } from "./error-page"
 
 import "../index.css"
 
@@ -19,6 +23,8 @@ export interface RouterAppContext {}
 export const Route =
   createRootRouteWithContext<RouterAppContext>()({
     component: RootComponent,
+    notFoundComponent: NotFound,
+    errorComponent: ErrorComponent,
     head: () => ({
       meta: [
         {
@@ -59,4 +65,49 @@ function RootComponent() {
       <TanStackRouterDevtools position="bottom-left" />
     </>
   )
+}
+
+function NotFound() {
+  return <ErrorPage code={404} />
+}
+
+function ErrorComponent({
+  error,
+}: {
+  error: unknown
+}) {
+  const navigate = useNavigate()
+
+  if (error instanceof AppError) {
+    return (
+      <ErrorPage
+        code={error.status}
+        title={error.message}
+        description={error.description}
+        actions={
+          error.status === 401 ? (
+            <>
+              <Button
+                onClick={() =>
+                  navigate({ to: "/login" })
+                }
+              >
+                去登录
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  window.history.go(-1)
+                }
+              >
+                返回上页
+              </Button>
+            </>
+          ) : undefined
+        }
+      />
+    )
+  }
+
+  return <ErrorPage code={500} />
 }
