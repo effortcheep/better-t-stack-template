@@ -159,15 +159,18 @@ export function templateColumns(
         return (
           <>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                >
-                  <MoreHorizontalIcon className="size-4" />
-                  <span className="sr-only">操作</span>
-                </Button>
+              <DropdownMenuTrigger
+                nativeButton={true}
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                  />
+                }
+              >
+                <MoreHorizontalIcon className="size-4" />
+                <span className="sr-only">操作</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuGroup>
