@@ -15,11 +15,14 @@ export const Route = createFileRoute(
   "/_authenticated/template/",
 )({
   validateSearch: searchSchema,
+  staticData: { breadcrumbs: [{ label: "模板管理", href: "/template" }, { label: "模板列表" }] },
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
-  return <TemplateListPage search={search} navigate={navigate} />
+  return (
+    <TemplateListPage search={search} navigate={navigate} />
+  )
 }

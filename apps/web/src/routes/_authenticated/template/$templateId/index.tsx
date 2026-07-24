@@ -5,6 +5,7 @@ import TemplateDetailPage from "@/features/template/pages/$templateId"
 export const Route = createFileRoute(
   "/_authenticated/template/$templateId/",
 )({
+  staticData: { breadcrumbs: [{ label: "模板管理", href: "/template" }, { label: "详情" }] },
   component: RouteComponent,
 })
 

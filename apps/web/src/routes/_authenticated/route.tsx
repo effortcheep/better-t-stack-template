@@ -1,6 +1,6 @@
 "use client"
 
-import { Outlet, createFileRoute } from "@tanstack/react-router"
+import { Link, Outlet, createFileRoute, useMatches } from "@tanstack/react-router"
 
 import {
   SidebarInset,
@@ -36,15 +36,34 @@ function RouteComponent() {
             />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Build Your Application
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
+                {(() => {
+                  const matches = useMatches()
+                  const leafMatch = matches[matches.length - 1] as unknown as Record<string, unknown> | undefined
+                  const routeBreadcrumbs =
+                    (leafMatch?.staticData as { breadcrumbs?: { label: string; href?: string }[] } | undefined)
+                      ?.breadcrumbs ?? []
+                  const items = [
+                    { label: "Better T Stack" },
+                    ...routeBreadcrumbs,
+                  ]
+                  return items.map((item, index) => {
+                    const isLast = index === items.length - 1
+                    return (
+                      <>
+                        <BreadcrumbItem>
+                          {isLast || !item.href ? (
+                            <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                          ) : (
+                            <BreadcrumbLink render={<Link to={item.href} />}>
+                              {item.label}
+                            </BreadcrumbLink>
+                          )}
+                        </BreadcrumbItem>
+                        {!isLast && <BreadcrumbSeparator />}
+                      </>
+                    )
+                  })
+                })()}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
