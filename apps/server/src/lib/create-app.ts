@@ -1,12 +1,12 @@
 import { OpenAPIHono } from "@hono/zod-openapi"
 import type { Schema } from "hono"
 import { requestId } from "hono/request-id"
-import {
-  notFound,
-  onError,
-  serveEmojiFavicon,
-} from "stoker/middlewares"
-import { defaultHook } from "stoker/openapi"
+import { serveEmojiFavicon } from "stoker/middlewares"
+
+import notFound from "~/middlewares/not-found"
+import onError from "~/middlewares/on-error"
+
+import defaultHook from "~/lib/default-hook"
 
 import { pinoLogger } from "~/middlewares/pino-logger"
 

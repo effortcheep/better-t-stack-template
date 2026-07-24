@@ -9,19 +9,19 @@ export default function configureOpenAPI(app: AppOpenAPI) {
     openapi: "3.0.0",
     info: {
       version: packageJSON.version,
-      title: "Templete API",
+      title: "Template API",
     },
   })
 
   app.get(
-    "/refrence",
+    "/reference",
     Scalar({
       url: "/doc",
       theme: "kepler",
       layout: "classic",
       defaultHttpClient: {
         targetKey: "js",
-        clientKey: "featch",
+        clientKey: "fetch",
       },
     }),
   )

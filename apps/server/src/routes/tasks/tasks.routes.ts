@@ -1,14 +1,15 @@
 import {
   selectTasksSchema,
-  inserTasksSchema,
+  insertTasksSchema,
   patchTasksSchema,
 } from "@better-t-stack-template/db/schema/tasks"
 import { createRoute, z } from "@hono/zod-openapi"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 import {
+  bodyContent,
+  bodyContentRequired,
   jsonContent,
-  jsonContentRequired,
-} from "stoker/openapi/helpers"
+} from "~/lib/response-helpers"
 import {
   createErrorSchema,
   IdParamsSchema,
@@ -32,9 +33,9 @@ export const create = createRoute({
   path: "/tasks",
   method: "post",
   request: {
-    body: jsonContentRequired(
-      inserTasksSchema,
-      "The taks to create",
+    body: bodyContentRequired(
+      insertTasksSchema,
+      "The task to create",
     ),
   },
   tags,
@@ -44,8 +45,8 @@ export const create = createRoute({
       "The created task",
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-      createErrorSchema(inserTasksSchema),
-      "THe validation error(s)",
+      createErrorSchema(insertTasksSchema),
+      "The validation error(s)",
     ),
   },
 })
@@ -60,7 +61,7 @@ export const getOne = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       selectTasksSchema,
-      "The request task",
+      "The requested task",
     ),
   },
 })
@@ -70,9 +71,9 @@ export const update = createRoute({
   method: "patch",
   request: {
     params: IdParamsSchema,
-    body: jsonContent(
+    body: bodyContent(
       patchTasksSchema,
-      "The tasks to update",
+      "The task to update",
     ),
   },
   tags,
