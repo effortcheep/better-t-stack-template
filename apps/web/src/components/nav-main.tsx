@@ -41,7 +41,7 @@ export function NavMain({
             render={<SidebarMenuItem />}
           >
             <CollapsibleTrigger
-              nativeButton={false}
+              nativeButton={true}
               render={<SidebarMenuButton tooltip={item.title} />}
             >
               {item.icon}
