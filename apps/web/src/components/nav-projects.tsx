@@ -38,6 +38,7 @@ export function NavProjects({
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton
+              nativeButton={false}
               render={<a href={item.url} />}
             >
               {item.icon}

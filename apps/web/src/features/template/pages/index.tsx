@@ -222,6 +222,7 @@ export default function TemplateListPage({
           </p>
         </div>
         <Button
+          nativeButton={false}
           render={<Link to="/template/add-template" />}
         >
           <PlusIcon data-icon="inline-start" />
