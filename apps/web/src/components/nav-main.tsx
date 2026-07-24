@@ -13,6 +13,8 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@better-t-stack-template/ui/components/sidebar"
+import { Link } from "@tanstack/react-router"
+
 import { ChevronRightIcon } from "lucide-react"
 
 export function NavMain({
@@ -52,7 +54,7 @@ export function NavMain({
               <SidebarMenuSub>
                 {item.items?.map((subItem) => (
                   <SidebarMenuSubItem key={subItem.title}>
-                    <SidebarMenuSubButton render={<a href={subItem.url} />}>
+                    <SidebarMenuSubButton render={<Link to={subItem.url} />}>
                       <span>{subItem.title}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
