@@ -24,7 +24,7 @@ export function DataTableViewOptions<TData>({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        nativeButton={false}
+        nativeButton={true}
         render={
           <Button variant="outline" size="sm" className="h-8 hidden lg:flex">
           </Button>

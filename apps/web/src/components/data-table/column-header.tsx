@@ -35,7 +35,7 @@ export function DataTableColumnHeader<TData, TValue>({
     <div className={cn("flex items-center gap-1", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger
-          nativeButton={false}
+          nativeButton={true}
           render={
             <Button
               variant="ghost"
