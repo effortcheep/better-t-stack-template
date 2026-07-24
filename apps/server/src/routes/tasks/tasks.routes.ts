@@ -3,28 +3,34 @@ import {
   insertTasksSchema,
   patchTasksSchema,
 } from "@better-t-stack-template/db/schema/tasks"
-import { createRoute, z } from "@hono/zod-openapi"
+import { createRoute } from "@hono/zod-openapi"
 import * as HttpStatusCodes from "stoker/http-status-codes"
-import {
-  bodyContent,
-  bodyContentRequired,
-  jsonContent,
-} from "~/lib/response-helpers"
 import {
   createErrorSchema,
   IdParamsSchema,
 } from "stoker/openapi/schemas"
+
+import {
+  bodyContent,
+  bodyContentRequired,
+  jsonContent,
+  paginatedSchema,
+  paginationQuerySchema,
+} from "~/lib/response-helpers"
 
 const tags = ["Tasks"]
 
 export const list = createRoute({
   path: "/tasks",
   method: "get",
+  request: {
+    query: paginationQuerySchema,
+  },
   tags,
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      z.array(selectTasksSchema),
-      "The list of tasks",
+      paginatedSchema(selectTasksSchema),
+      "The paginated list of tasks",
     ),
   },
 })

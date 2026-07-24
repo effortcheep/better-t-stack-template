@@ -65,6 +65,27 @@ export const jsonContentRequired = <T extends z.ZodTypeAny>(
 })
 
 // ---------------------------------------------------------------------------
+// 分页
+// ---------------------------------------------------------------------------
+
+/** 分页数据 schema（不带信封），作为 jsonContent 的入参 */
+export const paginatedSchema = <T extends z.ZodTypeAny>(item: T) =>
+  z.object({
+    items: z.array(item),
+    total: z.number().int().nonnegative().openapi({ example: 42 }),
+    page: z.number().int().positive().openapi({ example: 1 }),
+    pageSize: z.number().int().min(1).max(100).openapi({ example: 20 }),
+  })
+
+/** 分页 + 排序 query 参数 schema */
+export const paginationQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  sort: z.enum(["createdAt", "updatedAt"]).default("createdAt"),
+  order: z.enum(["asc", "desc"]).default("desc"),
+})
+
+// ---------------------------------------------------------------------------
 // Handler 响应辅助函数
 // ---------------------------------------------------------------------------
 

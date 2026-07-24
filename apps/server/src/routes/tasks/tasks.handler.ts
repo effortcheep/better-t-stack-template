@@ -1,4 +1,4 @@
-import { db, eq } from "@better-t-stack-template/db"
+import { count, db, desc as drizzleDesc, asc as drizzleAsc, eq } from "@better-t-stack-template/db"
 import { tasks } from "@better-t-stack-template/db/schema/tasks"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 import * as HttpStatusPhrases from "stoker/http-status-phrases"
@@ -15,8 +15,20 @@ import type {
 } from "./tasks.routes"
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-  const result = await db.query.tasks.findMany()
-  return ok(c, result)
+  const { page, pageSize, sort, order } = c.req.valid("query")
+
+  const orderFn = order === "asc" ? drizzleAsc : drizzleDesc
+
+  const sortColumn = sort === "createdAt" ? tasks.createdAt : tasks.updatedAt
+
+  const items = await db.query.tasks.findMany({
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+    orderBy: orderFn(sortColumn),
+  })
+  const [totalRow] = await db.select({ total: count() }).from(tasks)
+
+  return ok(c, { items, total: totalRow?.total ?? 0, page, pageSize })
 }
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
