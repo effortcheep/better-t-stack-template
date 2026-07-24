@@ -43,7 +43,7 @@ function RouteComponent() {
                     (leafMatch?.staticData as { breadcrumbs?: { label: string; href?: string }[] } | undefined)
                       ?.breadcrumbs ?? []
                   const items = [
-                    { label: "Better T Stack" },
+                    { label: "Better T Stack", href: "/" },
                     ...routeBreadcrumbs,
                   ]
                   return items.map((item, index) => {
