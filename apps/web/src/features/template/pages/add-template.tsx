@@ -1,8 +1,8 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { TemplateForm } from "@/components/template-form"
-import { useCreateTemplate } from "@/lib/api"
+import { TemplateForm } from "@/features/template/components/template-form"
+import { useCreateTemplate } from "@/features/template/api"
 
 export default function AddTemplatePage() {
   const navigate = useNavigate()

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import UpdateTemplatePage from "@/pages/_authenticated/template/$templateId/update"
+import UpdateTemplatePage from "@/features/template/pages/$templateId/update"
 
 export const Route = createFileRoute(
   "/_authenticated/template/$templateId/update",

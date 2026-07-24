@@ -12,8 +12,8 @@ import { useNavigate } from "@tanstack/react-router"
 import { SearchIcon } from "lucide-react"
 import { useState } from "react"
 
-import { TemplateForm } from "@/components/template-form"
-import { useTemplate, useUpdateTemplate } from "@/lib/api"
+import { TemplateForm } from "@/features/template/components/template-form"
+import { useTemplate, useUpdateTemplate } from "@/features/template/api"
 
 export interface UpdateTemplatePageProps {
   templateId: string

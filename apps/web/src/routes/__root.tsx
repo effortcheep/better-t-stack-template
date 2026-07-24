@@ -12,7 +12,7 @@ import { useNavigate } from "@tanstack/react-router"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { AppError } from "@/lib/errors"
-import { ErrorPage } from "@/pages/error"
+import { ErrorPage } from "@/features/error/pages/error"
 
 import "../index.css"
 

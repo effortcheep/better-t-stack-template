@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import TemplateListPage from "@/pages/_authenticated/template"
+import TemplateListPage from "@/features/template/pages"
 
 const searchSchema = z.object({
   search: z.string().default(""),

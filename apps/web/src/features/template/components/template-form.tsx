@@ -37,13 +37,13 @@ import { useEffect, useRef, useState } from "react"
 import type {
   TemplateCreateInput,
   TemplateRecord,
-} from "@/lib/template-types"
+} from "@/features/template/types"
 import {
   PRIORITY_OPTIONS,
   REVIEW_STATUS_OPTIONS,
   STATUS_OPTIONS,
   TAG_OPTIONS,
-} from "@/lib/template-types"
+} from "@/features/template/types"
 
 interface TemplateFormProps {
   defaultValues?: TemplateRecord

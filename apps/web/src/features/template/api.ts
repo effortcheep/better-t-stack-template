@@ -10,7 +10,7 @@ import type {
   TemplateListResponse,
   TemplateRecord,
   TemplateUpdateInput,
-} from "@/lib/template-types"
+} from "@/features/template/types"
 
 // 模拟数据 — 生成 23 条以演示分页
 let nextId = 24

@@ -6,7 +6,7 @@ import {
   REVIEW_STATUS_OPTIONS,
   STATUS_OPTIONS,
   TAG_OPTIONS,
-} from "@/lib/template-types"
+} from "@/features/template/types"
 
 type BadgeVariant =
   | "default"

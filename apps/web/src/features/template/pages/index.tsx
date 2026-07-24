@@ -37,13 +37,13 @@ import {
 import {
   useDeleteTemplate,
   useTemplateList,
-} from "@/lib/api"
-import { templateColumns } from "./components/template-columns"
-import { ConfirmDeleteDialog } from "./components/confirm-delete-dialog"
+} from "@/features/template/api"
+import { templateColumns } from "@/features/template/components/template-columns"
+import { ConfirmDeleteDialog } from "@/features/template/components/confirm-delete-dialog"
 import {
   PRIORITY_OPTIONS,
   STATUS_OPTIONS,
-} from "@/lib/template-types"
+} from "@/features/template/types"
 
 /** 模板列表页的搜索参数形状，与 route 文件中的 searchSchema 保持一致 */
 export interface TemplateListSearch {

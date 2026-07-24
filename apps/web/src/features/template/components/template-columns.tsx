@@ -24,8 +24,8 @@ import {
   ReviewStatusBadge,
   StatusBadge,
   TagBadge,
-} from "@/components/template-badges"
-import { type TemplateRecord } from "@/lib/template-types"
+} from "@/features/template/components/template-badges"
+import { type TemplateRecord } from "@/features/template/types"
 
 import { ConfirmDeleteDialog } from "./confirm-delete-dialog"
 
