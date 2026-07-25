@@ -27,15 +27,18 @@ app.use(
 app.use("/api/v1/*", authMiddleware())
 
 // jwt 插件端点委托给 better-auth 原生 handler
-app.on(["GET"], "/api/v1/auth/jwks", (c) => auth.handler(c.req.raw))
+app.on(["GET"], "/api/v1/auth/jwks", (c) =>
+  auth.handler(c.req.raw),
+)
 app.on(["POST", "GET"], "/api/v1/auth/token", (c) =>
   auth.handler(c.req.raw),
 )
 
-const routes = [index, tasks, authRoutes] as const
+app.route("/", index)
 
+const routes = [index, tasks, authRoutes] as const
 routes.forEach((route) => {
-  app.route("/", route)
+  app.route("/api/v1", route)
 })
 
 // app.get("/", (c) => {

@@ -19,7 +19,7 @@ const loginSchema = z
   })
 
 export const login = createRoute({
-  path: "/api/v1/auth/login",
+  path: "/auth/login",
   method: "post",
   request: {
     body: bodyContentRequired(loginSchema, "登录参数"),
@@ -51,7 +51,7 @@ const registerSchema = z.object({
 })
 
 export const register = createRoute({
-  path: "/api/v1/auth/register",
+  path: "/auth/register",
   method: "post",
   request: {
     body: bodyContentRequired(registerSchema, "注册参数"),
@@ -67,7 +67,7 @@ export const register = createRoute({
 // ---------------------------------------------------------------------------
 
 export const logout = createRoute({
-  path: "/api/v1/auth/logout",
+  path: "/auth/logout",
   method: "post",
   tags,
   responses: {
@@ -88,7 +88,7 @@ const checkUsernameDataSchema = z.object({
 })
 
 export const checkUsername = createRoute({
-  path: "/api/v1/auth/check-username",
+  path: "/auth/check-username",
   method: "post",
   request: {
     body: bodyContentRequired(checkUsernameSchema, "用户名"),

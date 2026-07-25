@@ -167,6 +167,8 @@ export const register: AppRouteHandler<
 export const logout: AppRouteHandler<LogoutRoute> = async (
   c,
 ) => {
+  console.log("123")
+  console.log("header", c.req.raw.headers)
   await auth.api.signOut({
     headers: c.req.raw.headers,
   })

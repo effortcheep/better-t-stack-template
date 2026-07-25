@@ -37,7 +37,7 @@ describe("tasks routes", () => {
     execSync("echo '444'")
   })
 
-  it("post /tasks validates the body when creating", async () => {
+  it("post /api/v1/tasks validates the body when creating", async () => {
     const response = await client.tasks.$post({
       // @ts-expect-error intentionally missing name to test validation
       json: {
