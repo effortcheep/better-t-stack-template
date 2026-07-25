@@ -39,7 +39,7 @@ export function useTaskList(params: TaskListParams = {}) {
       })
       if (!res.ok) throw new Error(`获取任务列表失败 (${res.status})`)
       const json = await res.json()
-      return taskListResponseSchema.parse(json)
+      return taskListResponseSchema.parse(json.data)
     },
   })
 }
@@ -56,7 +56,7 @@ export function useTask(id: number) {
         throw new Error(`获取任务失败 (${res.status})`)
       }
       const json = await res.json()
-      return selectTaskSchema.parse(json)
+      return selectTaskSchema.parse(json.data)
     },
     enabled: !!id,
   })
@@ -83,7 +83,7 @@ export function useCreateTask() {
         throw new Error(err.message ?? `创建任务失败 (${res.status})`)
       }
       const json = await res.json()
-      return selectTaskSchema.parse(json)
+      return selectTaskSchema.parse(json.data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
@@ -120,7 +120,7 @@ export function useUpdateTask() {
         throw new Error(err.message ?? `更新任务失败 (${res.status})`)
       }
       const json = await res.json()
-      return selectTaskSchema.parse(json)
+      return selectTaskSchema.parse(json.data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
