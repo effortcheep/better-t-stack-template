@@ -36,7 +36,7 @@ import {
 } from "@/features/template/components/template-badges"
 import { useDeleteTemplate, useTemplate } from "@/features/template/api"
 
-import { ConfirmDeleteDialog } from "@/features/template/components/confirm-delete-dialog"
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
 
 export interface TemplateDetailPageProps {
   templateId: string

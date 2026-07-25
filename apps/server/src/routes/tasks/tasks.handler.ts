@@ -1,9 +1,15 @@
-import { count, db, desc as drizzleDesc, asc as drizzleAsc, eq } from "@better-t-stack-template/db"
+import {
+  count,
+  db,
+  desc as drizzleDesc,
+  asc as drizzleAsc,
+  eq,
+} from "@better-t-stack-template/db"
 import { tasks } from "@better-t-stack-template/db/schema/tasks"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 import * as HttpStatusPhrases from "stoker/http-status-phrases"
-import { err, noContent, ok } from "~/lib/response-helpers"
 
+import { err, noContent, ok } from "~/lib/response-helpers"
 import type { AppRouteHandler } from "~/lib/type"
 
 import type {
@@ -14,24 +20,39 @@ import type {
   UpdateRoute,
 } from "./tasks.routes"
 
-export const list: AppRouteHandler<ListRoute> = async (c) => {
-  const { page, pageSize, sort, order } = c.req.valid("query")
+export const list: AppRouteHandler<ListRoute> = async (
+  c,
+) => {
+  const { page, pageSize, sort, order } =
+    c.req.valid("query")
+
+  console.log("user", c.var.user)
 
   const orderFn = order === "asc" ? drizzleAsc : drizzleDesc
 
-  const sortColumn = sort === "createdAt" ? tasks.createdAt : tasks.updatedAt
+  const sortColumn =
+    sort === "createdAt" ? tasks.createdAt : tasks.updatedAt
 
   const items = await db.query.tasks.findMany({
     limit: pageSize,
     offset: (page - 1) * pageSize,
     orderBy: orderFn(sortColumn),
   })
-  const [totalRow] = await db.select({ total: count() }).from(tasks)
+  const [totalRow] = await db
+    .select({ total: count() })
+    .from(tasks)
 
-  return ok(c, { items, total: totalRow?.total ?? 0, page, pageSize })
+  return ok(c, {
+    items,
+    total: totalRow?.total ?? 0,
+    page,
+    pageSize,
+  })
 }
 
-export const create: AppRouteHandler<CreateRoute> = async (c) => {
+export const create: AppRouteHandler<CreateRoute> = async (
+  c,
+) => {
   const task = c.req.valid("json")
   const [inserted] = await db
     .insert(tasks)
@@ -40,7 +61,9 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
   return ok(c, inserted ?? null)
 }
 
-export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+export const getOne: AppRouteHandler<GetOneRoute> = async (
+  c,
+) => {
   const { id } = c.req.valid("param")
   const task = await db.query.tasks.findFirst({
     where: (fields, { eq }) => eq(fields.id, id),
@@ -48,7 +71,9 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   return ok(c, task ?? null)
 }
 
-export const update: AppRouteHandler<UpdateRoute> = async (c) => {
+export const update: AppRouteHandler<UpdateRoute> = async (
+  c,
+) => {
   const { id } = c.req.valid("param")
   const updates = c.req.valid("json")
 
@@ -60,14 +85,20 @@ export const update: AppRouteHandler<UpdateRoute> = async (c) => {
   return ok(c, task ?? null)
 }
 
-export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+export const remove: AppRouteHandler<RemoveRoute> = async (
+  c,
+) => {
   const { id } = c.req.valid("param")
 
   const result = await db
     .delete(tasks)
     .where(eq(tasks.id, id))
   if (result.rowCount === 0) {
-    return err(c, HttpStatusPhrases.NOT_FOUND, HttpStatusCodes.NOT_FOUND)
+    return err(
+      c,
+      HttpStatusPhrases.NOT_FOUND,
+      HttpStatusCodes.NOT_FOUND,
+    )
   }
 
   return noContent(c)

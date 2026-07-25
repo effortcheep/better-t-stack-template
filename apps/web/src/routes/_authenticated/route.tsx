@@ -1,6 +1,13 @@
 "use client"
 
-import { Link, Outlet, createFileRoute, useMatches } from "@tanstack/react-router"
+import {
+  Link,
+  Navigate,
+  Outlet,
+  createFileRoute,
+  useLocation,
+  useMatches,
+} from "@tanstack/react-router"
 
 import {
   SidebarInset,
@@ -17,12 +24,24 @@ import {
 } from "@better-t-stack-template/ui/components/breadcrumb"
 import { Separator } from "@better-t-stack-template/ui/components/separator"
 import { AppSidebar } from "@/components/app-sidebar"
+import { useAuth } from "@/stores/auth"
 
 export const Route = createFileRoute("/_authenticated")({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const { isLoading, isAuthenticated } = useAuth()
+  const location = useLocation()
+
+  // 加载中显示空白，避免闪烁
+  if (isLoading) return null
+
+  // 未认证 → 跳转登录页，附带 redirect 参数
+  if (!isAuthenticated) {
+    return <Navigate to="/login" search={{ redirect: location.pathname }} replace />
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />

@@ -39,7 +39,7 @@ import {
   useTemplateList,
 } from "@/features/template/api"
 import { templateColumns } from "@/features/template/components/template-columns"
-import { ConfirmDeleteDialog } from "@/features/template/components/confirm-delete-dialog"
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
 import {
   PRIORITY_OPTIONS,
   STATUS_OPTIONS,

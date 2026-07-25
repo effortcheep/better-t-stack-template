@@ -1,18 +1,21 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { Button } from "@better-t-stack-template/ui/components/button"
 import { Toaster } from "@better-t-stack-template/ui/components/sonner"
 import { TooltipProvider } from "@better-t-stack-template/ui/components/tooltip"
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
 import {
   HeadContent,
   Outlet,
   createRootRouteWithContext,
 } from "@tanstack/react-router"
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
-import { Button } from "@better-t-stack-template/ui/components/button"
 import { useNavigate } from "@tanstack/react-router"
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 
 import { ThemeProvider } from "@/components/theme-provider"
-import { AppError } from "@/lib/errors"
 import { ErrorPage } from "@/features/error/pages/error"
+import { AppError } from "@/lib/errors"
 
 import "../index.css"
 
@@ -62,7 +65,7 @@ function RootComponent() {
           </TooltipProvider>
         </ThemeProvider>
       </QueryClientProvider>
-      <TanStackRouterDevtools position="bottom-left" />
+      <TanStackRouterDevtools position="bottom-right" />
     </>
   )
 }
@@ -71,11 +74,7 @@ function NotFound() {
   return <ErrorPage code={404} />
 }
 
-function ErrorComponent({
-  error,
-}: {
-  error: unknown
-}) {
+function ErrorComponent({ error }: { error: unknown }) {
   const navigate = useNavigate()
 
   if (error instanceof AppError) {
@@ -88,17 +87,13 @@ function ErrorComponent({
           error.status === 401 ? (
             <>
               <Button
-                onClick={() =>
-                  navigate({ to: "/login" })
-                }
+                onClick={() => navigate({ to: "/login" })}
               >
                 去登录
               </Button>
               <Button
                 variant="outline"
-                onClick={() =>
-                  window.history.go(-1)
-                }
+                onClick={() => window.history.go(-1)}
               >
                 返回上页
               </Button>
