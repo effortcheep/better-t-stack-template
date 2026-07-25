@@ -27,7 +27,7 @@ import {
 } from "@/features/template/components/template-badges"
 import { type TemplateRecord } from "@/features/template/types"
 
-import { ConfirmDeleteDialog } from "./confirm-delete-dialog"
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
 
 const columnHelper = createColumnHelper<TemplateRecord>()
 
@@ -174,37 +174,41 @@ export function templateColumns(
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuGroup>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to="/template/$templateId"
-                      params={{
-                        templateId: String(
-                          row.original.id,
-                        ),
-                      }}
-                    >
-                      <ViewIcon data-icon="inline-start" />
-                      查看
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to="/template/$templateId/update"
-                      params={{
-                        templateId: String(
-                          row.original.id,
-                        ),
-                      }}
-                    >
-                      <PencilIcon data-icon="inline-start" />
-                      编辑
-                    </Link>
-                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    render={
+                      <Link
+                        to="/template/$templateId"
+                        params={{
+                          templateId: String(
+                            row.original.id,
+                          ),
+                        }}
+                      >
+                        <ViewIcon data-icon="inline-start" />
+                        查看
+                      </Link>
+                    }
+                  />
+                  <DropdownMenuItem
+                    render={
+                      <Link
+                        to="/template/$templateId/update"
+                        params={{
+                          templateId: String(
+                            row.original.id,
+                          ),
+                        }}
+                      >
+                        <PencilIcon data-icon="inline-start" />
+                        编辑
+                      </Link>
+                    }
+                  />
                 </DropdownMenuGroup>
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onSelect={(e) => {
+                    variant="destructive"
+                    onClick={(e) => {
                       e.preventDefault()
                       setShowDeleteDialog(true)
                     }}

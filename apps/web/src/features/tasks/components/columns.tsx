@@ -18,8 +18,8 @@ import {
 } from "lucide-react"
 import * as React from "react"
 
-import { DataTableColumnHeader } from "@/components/data-table"
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
+import { DataTableColumnHeader } from "@/components/data-table"
 import type { TaskRecord } from "@/features/tasks/types"
 
 const columnHelper = createColumnHelper<TaskRecord>()
@@ -68,7 +68,10 @@ export function taskColumns(
 
     columnHelper.accessor("name", {
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="名称" />
+        <DataTableColumnHeader
+          column={column}
+          title="名称"
+        />
       ),
       cell: ({ getValue, row }) => (
         <Link
@@ -83,7 +86,10 @@ export function taskColumns(
 
     columnHelper.accessor("done", {
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="状态" />
+        <DataTableColumnHeader
+          column={column}
+          title="状态"
+        />
       ),
       cell: ({ getValue }) => (
         <Switch
@@ -97,7 +103,10 @@ export function taskColumns(
 
     columnHelper.accessor("createdAt", {
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="创建时间" />
+        <DataTableColumnHeader
+          column={column}
+          title="创建时间"
+        />
       ),
       cell: ({ getValue }) => {
         const d = getValue()
@@ -170,7 +179,7 @@ export function taskColumns(
                 </DropdownMenuGroup>
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
+                    variant="destructive"
                     onClick={(e) => {
                       e.preventDefault()
                       setShowDeleteDialog(true)
