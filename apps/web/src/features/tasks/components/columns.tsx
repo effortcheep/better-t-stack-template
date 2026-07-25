@@ -171,22 +171,17 @@ export function taskColumns(
                 <DropdownMenuGroup>
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    render={
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setShowDeleteDialog(true)
-                        }}
-                      >
-                        <Trash2Icon
-                          data-icon="inline-start"
-                          className="text-destructive"
-                        />
-                        删除
-                      </button>
-                    }
-                  />
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setShowDeleteDialog(true)
+                    }}
+                  >
+                    <Trash2Icon
+                      data-icon="inline-start"
+                      className="text-destructive"
+                    />
+                    删除
+                  </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
