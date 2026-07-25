@@ -3,6 +3,8 @@ import { env } from "@better-t-stack-template/env/server"
 import { cors } from "hono/cors"
 
 import createApp from "~/lib/create-app"
+import { authMiddleware } from "~/middlewares/auth"
+import authRoutes from "~/routes/auth/auth.index"
 import index from "~/routes/index.route"
 import tasks from "~/routes/tasks/tasks.index"
 
@@ -22,11 +24,15 @@ app.use(
   }),
 )
 
-app.on(["POST", "GET"], "/api/auth/*", (c) =>
+app.use("/api/v1/*", authMiddleware())
+
+// jwt 插件端点委托给 better-auth 原生 handler
+app.on(["GET"], "/api/v1/auth/jwks", (c) => auth.handler(c.req.raw))
+app.on(["POST", "GET"], "/api/v1/auth/token", (c) =>
   auth.handler(c.req.raw),
 )
 
-const routes = [index, tasks] as const
+const routes = [index, tasks, authRoutes] as const
 
 routes.forEach((route) => {
   app.route("/", route)

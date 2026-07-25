@@ -11,6 +11,10 @@ export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
+  /** 登录账号名 */
+  username: text("username").unique(),
+  /** 显示名称（未规格化原始值） */
+  displayUsername: text("display_username"),
   emailVerified: boolean("email_verified")
     .default(false)
     .notNull(),
@@ -72,6 +76,14 @@ export const account = pgTable(
   },
   (table) => [index("account_userId_idx").on(table.userId)],
 )
+
+export const jwks = pgTable("jwks", {
+  id: text("id").primaryKey(),
+  publicKey: text("public_key").notNull(),
+  privateKey: text("private_key").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at"),
+})
 
 export const verification = pgTable(
   "verification",

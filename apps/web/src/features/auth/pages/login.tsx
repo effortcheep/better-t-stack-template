@@ -1,16 +1,32 @@
-import { useNavigate } from "@tanstack/react-router"
+import { useNavigate, useSearch } from "@tanstack/react-router"
 import { GalleryVerticalEndIcon } from "lucide-react"
+import { useState } from "react"
 
+import { login } from "@/lib/auth"
 import { LoginForm } from "@/features/auth/components/login-form"
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const search = useSearch({ from: "/login" })
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, setIsPending] = useState(false)
 
-  const handleLogin = (
-    e: React.FormEvent<HTMLFormElement>,
-  ) => {
-    e.preventDefault()
-    navigate({ to: "/" })
+  const handleSubmit = async (values: { loginId: string; password: string }) => {
+    setError(null)
+    setIsPending(true)
+    try {
+      const isEmail = values.loginId.includes("@")
+      await login({
+        ...(isEmail ? { email: values.loginId } : { username: values.loginId }),
+        password: values.password,
+      })
+      const redirect = search.redirect ?? "/"
+      navigate({ to: redirect, replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "登录失败")
+    } finally {
+      setIsPending(false)
+    }
   }
 
   return (
@@ -29,7 +45,11 @@ export default function LoginPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <LoginForm onSubmit={handleLogin} />
+            <LoginForm
+              onSubmit={handleSubmit}
+              error={error}
+              isPending={isPending}
+            />
           </div>
         </div>
       </div>

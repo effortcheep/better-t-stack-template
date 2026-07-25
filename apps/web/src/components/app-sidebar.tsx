@@ -22,8 +22,13 @@ import { nav as adminNav } from "@/features/admin/nav"
 import { nav as dashboardNav } from "@/features/dashboard/nav"
 import { nav as homeNav } from "@/features/home/nav"
 import { nav as projectsNav } from "@/features/projects/nav"
+import { nav as tasksNav } from "@/features/tasks/nav"
 import { nav as templateNav } from "@/features/template/nav"
 import { nav as usersNav } from "@/features/users/nav"
+
+import { logout } from "@/lib/auth"
+import { useAuth } from "@/stores/auth"
+import { useNavigate } from "@tanstack/react-router"
 
 /** 聚合各 feature 的导航项。
  *  如需多个 feature 合并到同一分组，在此手动组合。 */
@@ -31,6 +36,7 @@ const navMain = [
   homeNav,
   dashboardNav,
   templateNav,
+  tasksNav,
   projectsNav,
   usersNav,
   adminNav,
@@ -55,13 +61,6 @@ const placeholderTeams = [
   },
 ]
 
-/** 用户信息占位 — 后续由 stores/auth.ts 提供。 */
-const placeholderUser = {
-  name: "shadcn",
-  email: "m@example.com",
-  avatar: "/avatars/shadcn.jpg",
-}
-
 /** 项目快捷方式占位 — 后续由 features/projects/ 提供真实数据。 */
 const placeholderProjects = [
   {
@@ -80,6 +79,18 @@ const placeholderProjects = [
 export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate({ to: "/login", replace: true })
+  }
+
+  const navUser = user
+    ? { name: String(user.name ?? ""), email: String(user.email ?? ""), avatar: String(user.image ?? "") }
+    : { name: "", email: "", avatar: "" }
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -90,7 +101,7 @@ export function AppSidebar({
         <NavProjects projects={placeholderProjects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={placeholderUser} />
+        <NavUser user={navUser} onLogout={handleLogout} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
