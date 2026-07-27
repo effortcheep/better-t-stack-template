@@ -1,3 +1,5 @@
+import { useEffect } from "react"
+
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +20,7 @@ import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
-import { nav as adminNav } from "@/features/admin/nav"
+import { nav as adminNav, rolesNav, permissionsNav } from "@/features/admin/nav"
 import { nav as dashboardNav } from "@/features/dashboard/nav"
 import { nav as homeNav } from "@/features/home/nav"
 import { nav as projectsNav } from "@/features/projects/nav"
@@ -28,11 +30,20 @@ import { nav as usersNav } from "@/features/users/nav"
 
 import { logout } from "@/lib/auth"
 import { useAuth } from "@/stores/auth"
+import { usePermissions } from "@/stores/permissions"
 import { useNavigate } from "@tanstack/react-router"
+
+/** 导航项类型 — 各 feature/nav.tsx 导出的公共契约 */
+export interface NavItem {
+  title: string
+  url: string
+  icon?: React.ReactNode
+  permissions?: string[]
+}
 
 /** 聚合各 feature 的导航项。
  *  如需多个 feature 合并到同一分组，在此手动组合。 */
-const navMain = [
+const navMain: NavItem[] = [
   homeNav,
   dashboardNav,
   templateNav,
@@ -40,6 +51,8 @@ const navMain = [
   projectsNav,
   usersNav,
   adminNav,
+  rolesNav,
+  permissionsNav,
 ]
 
 /** 团队切换占位 — 后续由 stores/ 或 features/team/ 提供。 */
@@ -73,7 +86,11 @@ const placeholderProjects = [
     url: "#",
     icon: <PieChartIcon />,
   },
-  { name: "Travel", url: "#", icon: <MapIcon /> },
+  {
+    name: "Travel",
+    url: "#",
+    icon: <MapIcon />,
+  },
 ]
 
 export function AppSidebar({
@@ -81,6 +98,20 @@ export function AppSidebar({
 }: React.ComponentProps<typeof Sidebar>) {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { isLoaded, fetch, has } = usePermissions()
+
+  /* 登录后自取一次权限 */
+  useEffect(() => {
+    if (!isLoaded) {
+      fetch()
+    }
+  }, [isLoaded, fetch])
+
+  /* 按权限过滤导航项：无 permissions 声明 → 公开；有声明 → OR 匹配 */
+  const visibleNav = navMain.filter((item) => {
+    if (!item.permissions || item.permissions.length === 0) return true
+    return item.permissions.some((p) => has(p))
+  })
 
   const handleLogout = async () => {
     await logout()
@@ -97,7 +128,7 @@ export function AppSidebar({
         <TeamSwitcher teams={placeholderTeams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMain} />
+        <NavMain items={visibleNav} />
         <NavProjects projects={placeholderProjects} />
       </SidebarContent>
       <SidebarFooter>

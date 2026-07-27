@@ -4,4 +4,5 @@ export const nav = {
   title: "任务管理",
   url: "/tasks",
   icon: <CheckSquareIcon />,
+  permissions: ["tasks:read"],
 }

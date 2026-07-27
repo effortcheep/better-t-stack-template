@@ -14,6 +14,7 @@ export function NavMain({
     title: string
     url: string
     icon?: React.ReactNode
+    permissions?: string[]
   }[]
 }) {
   return (

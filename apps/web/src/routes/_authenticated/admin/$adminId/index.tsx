@@ -1,12 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { requirePermission } from "@/lib/route-guard"
 
 import AdminDetailPage from "@/features/admin/pages/$adminId"
 
 export const Route = createFileRoute("/_authenticated/admin/$adminId/")({
+  beforeLoad: () => {
+    requirePermission("users:assign")
+  },
   staticData: {
     breadcrumbs: [
-      { label: "\u7ba1\u7406\u5458", href: "/admin" },
-      { label: "\u8be6\u60c5" },
+      { label: "管理员", href: "/admin" },
+      { label: "详情" },
     ],
   },
   component: RouteComponent,

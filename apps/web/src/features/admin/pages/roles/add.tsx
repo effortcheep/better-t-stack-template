@@ -1,33 +1,34 @@
 import { useNavigate } from "@tanstack/react-router"
 
-import { useCreateUser } from "@/features/admin/api"
-import { UserForm } from "@/features/admin/components/user-form"
+import { RoleForm } from "@/features/admin/components/role/role-form"
+import { useCreateRole } from "@/features/admin/role-api"
 
-export default function AdminAddPage() {
+export default function AddRolePage() {
   const navigate = useNavigate()
-  const createUser = useCreateUser()
+  const createMutation = useCreateRole()
 
   return (
     <div className="flex w-full max-w-3xl flex-1 flex-col gap-4 p-4 pt-0">
+      {/* 页头 */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            新建管理员
+            新建角色
           </h1>
           <p className="text-sm text-muted-foreground">
-            创建新的管理员用户
+            填写以下信息创建新的角色
           </p>
         </div>
       </div>
 
-      <UserForm
+      <RoleForm
         onSubmit={(values) =>
-          createUser.mutate(values, {
-            onSuccess: () => navigate({ to: "/admin" }),
+          createMutation.mutate(values, {
+            onSuccess: () => navigate({ to: "/admin/roles" }),
           })
         }
-        isPending={createUser.isPending}
-        onCancel={() => navigate({ to: "/admin" })}
+        isPending={createMutation.isPending}
+        submitLabel="创建角色"
       />
     </div>
   )

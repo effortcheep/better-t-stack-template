@@ -1,4 +1,5 @@
 import { Button } from "@better-t-stack-template/ui/components/button"
+import { Checkbox } from "@better-t-stack-template/ui/components/checkbox"
 import {
   Table,
   TableBody,
@@ -10,7 +11,7 @@ import {
 import { cn } from "@better-t-stack-template/ui/lib/utils"
 import { Link } from "@tanstack/react-router"
 import type {
-  ColumnFiltersState,
+  ColumnDef,
   PaginationState,
   RowSelectionState,
   SortingState,
@@ -20,28 +21,16 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { PlusIcon, ShieldIcon, Trash2Icon } from "lucide-react"
+import { PlusIcon, Trash2Icon } from "lucide-react"
 import * as React from "react"
 
-import {
-  DataTableBulkActions,
-  DataTablePagination,
-  DataTableToolbar,
-} from "@/components/data-table"
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
-import { useUserList } from "@/features/admin/api"
-import { userColumns } from "@/features/admin/components/user-columns"
+import { DataTableBulkActions, DataTablePagination } from "@/components/data-table"
+import { useDeleteRole, useRoleList } from "@/features/admin/role-api"
+import { roleColumns } from "@/features/admin/components/role/role-columns"
+import type { RoleRecord } from "@/features/admin/role-types"
 
-const columnLabels: Record<string, string> = {
-  name: "名称",
-  email: "邮箱",
-  username: "用户名",
-  emailVerified: "验证状态",
-  roles: "角色",
-  createdAt: "创建时间",
-}
-
-export default function AdminListPage() {
+export default function RoleListPage() {
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -49,72 +38,69 @@ export default function AdminListPage() {
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: "createdAt", desc: true },
   ])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  )
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
+  const [rowSelection, setRowSelection] =
+    React.useState<RowSelectionState>({})
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] =
     React.useState(false)
 
-  const search =
-    (columnFilters.find((f) => f.id === "name")?.value as
-      | string
-      | undefined) ?? ""
-
-  const userListQuery = useUserList({
-    search: search || undefined,
+  const roleListQuery = useRoleList({
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
     sort: (sorting[0]?.id as "createdAt" | "updatedAt") ?? "createdAt",
     order: sorting[0]?.desc ? "desc" : "asc",
   })
+  const deleteMutation = useDeleteRole()
 
-  // Reset to page 1 on search change
-  const handleColumnFiltersChange = React.useCallback(
-    (
-      updater:
-        | ColumnFiltersState
-        | ((old: ColumnFiltersState) => ColumnFiltersState),
-    ) => {
-      setColumnFilters((prev) => {
-        const next =
-          typeof updater === "function" ? updater(prev) : updater
-        const prevSearch =
-          (prev.find((f) => f.id === "name")?.value as string) ?? ""
-        const nextSearch =
-          (next.find((f) => f.id === "name")?.value as string) ?? ""
-        if (prevSearch !== nextSearch) {
-          setPagination((p) => ({ ...p, pageIndex: 0 }))
-        }
-        return next
-      })
-    },
+  const columns = React.useMemo(
+    () => [
+      {
+        id: "select",
+        header: ({ table }: { table: { getIsAllPageRowsSelected: () => boolean; toggleAllPageRowsSelected: (v: boolean) => void } }) => (
+          <Checkbox
+            checked={table.getIsAllPageRowsSelected()}
+            onCheckedChange={(checked) =>
+              table.toggleAllPageRowsSelected(!!checked)
+            }
+            aria-label="全选"
+          />
+        ),
+        cell: ({ row }: { row: { getIsSelected: () => boolean; toggleSelected: (v: boolean) => void } }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(checked) =>
+              row.toggleSelected(!!checked)
+            }
+            aria-label="选择行"
+          />
+        ),
+        meta: { className: "w-12" },
+        enableSorting: false,
+      },
+      ...roleColumns,
+    ],
     [],
-  )
+  ) as ColumnDef<RoleRecord, unknown>[]
 
   const table = useReactTable({
-    data: userListQuery.data?.items ?? [],
-    columns: userColumns,
+    data: roleListQuery.data?.items ?? [],
+    columns,
     state: {
       pagination,
       sorting,
-      columnFilters,
       rowSelection,
     },
     enableRowSelection: true,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
-    onColumnFiltersChange: handleColumnFiltersChange,
     onRowSelectionChange: setRowSelection,
     manualPagination: true,
     manualSorting: true,
-    manualFiltering: true,
-    pageCount: userListQuery.data
+    pageCount: roleListQuery.data
       ? Math.max(
           1,
           Math.ceil(
-            userListQuery.data.total /
-              userListQuery.data.pageSize,
+            roleListQuery.data.total /
+              roleListQuery.data.pageSize,
           ),
         )
       : 0,
@@ -125,8 +111,7 @@ export default function AdminListPage() {
     const ids = table
       .getFilteredSelectedRowModel()
       .rows.map((row) => row.original.id)
-    // TODO: wire up bulk delete API when available
-    console.warn("Bulk delete not yet implemented", ids)
+    ids.forEach((id) => deleteMutation.mutate(id))
     table.resetRowSelection()
   }
 
@@ -144,38 +129,20 @@ export default function AdminListPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            管理员列表
+            角色管理
           </h1>
           <p className="text-sm text-muted-foreground">
-            管理系统管理员用户
+            管理系统角色
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            nativeButton={false}
-            render={<Link to="/admin/roles" />}
-          >
-            <ShieldIcon data-icon="inline-start" />
-            角色管理
-          </Button>
-          <Button
-            nativeButton={false}
-            render={<Link to="/admin/add" />}
-          >
-            <PlusIcon data-icon="inline-start" />
-            新增
-          </Button>
-        </div>
+        <Button
+          nativeButton={false}
+          render={<Link to="/admin/roles/add" />}
+        >
+          <PlusIcon data-icon="inline-start" />
+          新建角色
+        </Button>
       </div>
-
-      {/* 工具栏 */}
-      <DataTableToolbar
-        table={table}
-        searchPlaceholder="搜索名称…"
-        searchKey="name"
-        columnLabels={columnLabels}
-      />
 
       {/* 表格 */}
       <div className="overflow-hidden rounded-md border">
@@ -209,7 +176,7 @@ export default function AdminListPage() {
           </TableHeader>
 
           <TableBody>
-            {userListQuery.isLoading ? (
+            {roleListQuery.isLoading ? (
               Array.from({
                 length:
                   table.getState().pagination.pageSize,
@@ -257,7 +224,7 @@ export default function AdminListPage() {
                   colSpan={table.getAllColumns().length}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  无匹配记录
+                  暂无角色
                 </TableCell>
               </TableRow>
             )}
@@ -270,11 +237,12 @@ export default function AdminListPage() {
         className="mt-auto"
       />
 
-      <DataTableBulkActions table={table} entityName="管理员">
+      <DataTableBulkActions table={table} entityName="角色">
         <Button
           variant="destructive"
           size="sm"
           onClick={handleBulkDelete}
+          disabled={deleteMutation.isPending}
         >
           <Trash2Icon data-icon="inline-start" />
           删除

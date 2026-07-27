@@ -1,17 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { requirePermission } from "@/lib/route-guard"
 
-import AdminAddPage from "@/features/admin/pages/add"
+import RoleListPage from "@/features/admin/pages/roles"
 
-export const Route = createFileRoute("/_authenticated/admin/add")({
+export const Route = createFileRoute("/_authenticated/admin/roles/")({
   beforeLoad: () => {
-    requirePermission("users:assign")
+    requirePermission("roles:read")
   },
   staticData: {
     breadcrumbs: [
       { label: "管理员", href: "/admin" },
-      { label: "新建管理员" },
+      { label: "角色管理" },
     ],
   },
-  component: AdminAddPage,
+  component: RoleListPage,
 })
