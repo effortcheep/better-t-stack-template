@@ -1,0 +1,6 @@
+{
+  "module": "admin",
+  "permissions": [
+    { "code": "users:assign", "description": "分配用户角色" }
+  ]
+}

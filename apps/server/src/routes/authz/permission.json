@@ -1,0 +1,10 @@
+{
+  "module": "authz",
+  "permissions": [
+    { "code": "roles:read", "description": "查看角色" },
+    { "code": "roles:create", "description": "创建角色" },
+    { "code": "roles:update", "description": "更新角色" },
+    { "code": "roles:delete", "description": "删除角色" },
+    { "code": "roles:manage", "description": "管理角色（全部操作）" }
+  ]
+}

@@ -5,10 +5,17 @@ import { cors } from "hono/cors"
 import createApp from "~/lib/create-app"
 import { authMiddleware } from "~/middlewares/auth"
 import authRoutes from "~/routes/auth/auth.index"
+import adminRoutes from "~/routes/admin/admin.index"
+import authzRoutes from "~/routes/authz/authz.index"
+import meRoutes from "~/routes/me/me.index"
 import index from "~/routes/index.route"
 import tasks from "~/routes/tasks/tasks.index"
+import { initPermissionRegistry } from "~/services/permission-registry"
 
 import configureOpenAPI from "./lib/configure-open-api"
+
+// 启动时扫描各模块 permission.json
+await initPermissionRegistry()
 
 const app = createApp()
 
@@ -35,14 +42,11 @@ app.on(["POST", "GET"], "/api/v1/auth/token", (c) =>
 )
 
 app.route("/", index)
+app.route("/api/v1/admin", adminRoutes)
 
-const routes = [index, tasks, authRoutes] as const
+const routes = [index, tasks, authRoutes, authzRoutes, meRoutes] as const
 routes.forEach((route) => {
   app.route("/api/v1", route)
 })
-
-// app.get("/", (c) => {
-//   return c.text("OK")
-// })
 
 export default app

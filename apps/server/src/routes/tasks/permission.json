@@ -1,0 +1,9 @@
+{
+  "module": "tasks",
+  "permissions": [
+    { "code": "tasks:read", "description": "查看任务" },
+    { "code": "tasks:create", "description": "创建任务" },
+    { "code": "tasks:update", "description": "更新任务" },
+    { "code": "tasks:delete", "description": "删除任务" }
+  ]
+}
