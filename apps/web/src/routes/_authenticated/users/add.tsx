@@ -1,8 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { requirePermission } from "@/lib/route-guard"
 
 import UserAddPage from "@/features/users/pages/add"
 
 export const Route = createFileRoute("/_authenticated/users/add")({
+  beforeLoad: () => {
+    requirePermission("users:assign")
+  },
   staticData: {
     breadcrumbs: [
       { label: "用户管理", href: "/users" },
