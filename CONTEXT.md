@@ -33,3 +33,12 @@ _避免_: 角色分配 (role assignment)
 **通配权限 (Wildcard)**:
 特殊权限码 `*:*`，匹配所有资源的所有操作。仅预置的 `admin` 角色持有。
 _避免_: 超级管理员权限
+
+## Tooling
+
+**CRUD 脚手架 (gen:crud)**:
+一次性生成某实体全套 CRUD 文件的 CLI 脚本（`scripts/gen-crud.ts`，`bun run gen:crud`）。
+输入 `--name posts --singular post --title "文章" --fields "name:text(searchable),done:boolean"`，输出 schema/handler/routes/feature/routes 文件。
+只**新建**文件，不打开任何既有文件；schema 重导出与 `db:push` 由 stdout TODO 提示人工处理。
+_避免_: 代码同步器 (code synchronizer)、注册器 (registrar)
+详见 [docs/specs/crud-scaffold-script.md](docs/specs/crud-scaffold-script.md) 与 ADR [0003](docs/adr/0003-crud-scaffold-script.md)。

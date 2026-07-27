@@ -1,0 +1,37 @@
+import {
+  pgTable,
+  serial,
+  timestamp,<%_ const usedTypes = new Set(fields.map((f) => f.type)); if (usedTypes.has("text")) { _%>
+  text,<%_ } if (usedTypes.has("boolean")) { _%>
+  boolean,<%_ } if (usedTypes.has("number")) { _%>
+  integer,<%_ } _%>
+} from "drizzle-orm/pg-core"
+import { createInsertSchema } from "drizzle-zod"
+import { createSelectSchema } from "drizzle-zod"
+
+export const <%= name %> = pgTable("<%= name %>", {
+  id: serial("id").primaryKey(),<%_ fields.forEach((f) => { _%>
+  <%= f.name %>: <%= f.type === "text" ? "text" : f.type === "boolean" ? "boolean" : f.type === "number" ? "integer" : "timestamp" %>("<%= f.name %>").notNull()<%= f.type === "boolean" ? ".default(false)" : "" %>,<%_ if (f.type === "date") { %>
+  // date 字段：客户端传 Date 对象，存为 timestamp<%_ } _%><%_ }) _%>
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+})
+
+export const select<%= Name %>Schema = createSelectSchema(<%= name %>)
+
+export const insert<%= Name %>Schema = createInsertSchema(<%= name %>, {<%_ fields.filter((f) => f.type === "text").forEach((f) => { _%>
+  <%= f.name %>: (field) => field.min(1).max(500),<%_ }) _%>
+})
+  .required({<%_ fields.filter((f) => f.type === "boolean").forEach((f) => { _%>
+    <%= f.name %>: true,<%_ }) _%>
+  })
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+
+export const patch<%= Name %>Schema = insert<%= Name %>Schema.partial()
