@@ -1,0 +1,161 @@
+// TanStack Query hooks — 调用真实后端 API
+
+import { env } from "@better-t-stack-template/env/web"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+
+import { getToken } from "@/lib/auth"
+import type {
+  <%= Singular %>ListParams,
+  <%= Singular %>ListResponse,
+  <%= Singular %>Record,
+} from "@/features/<%= name %>/types"
+import {
+  insert<%= Singular %>Schema,
+  patch<%= Singular %>Schema,
+  select<%= Singular %>Schema,
+  <%= singular %>ListResponseSchema,
+} from "@/features/<%= name %>/types"
+
+const BASE = `${env.VITE_SERVER_URL}/api/v1/<%= name %>`
+
+/** 创建/更新输入类型（业务字段） */
+type <%= Singular %>Input = {<% fields.forEach((f) => { %>
+  <%= f.name %>: <%= f.type === "text" ? "string" : f.type === "boolean" ? "boolean" : f.type === "number" ? "number" : "string" %><% }) %>
+}
+
+// ========== 查询 Hooks ==========
+
+export function use<%= Singular %>List(params: <%= Singular %>ListParams = {}) {
+  const { search = "", page = 1, pageSize = 10, sort = "createdAt", order = "desc" } = params
+
+  const searchParams = new URLSearchParams()
+  searchParams.set("page", String(page))
+  searchParams.set("pageSize", String(pageSize))
+  if (sort) searchParams.set("sort", sort)
+  if (order) searchParams.set("order", order)
+  if (search) searchParams.set("search", search)
+
+  return useQuery({
+    queryKey: ["<%= name %>", { search, page, pageSize, sort, order }],
+    queryFn: async (): Promise<<%= Singular %>ListResponse> => {
+      const res = await fetch(`${BASE}?${searchParams}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      if (!res.ok) throw new Error(`获取<%= title %>列表失败 (${res.status})`)
+      const json = await res.json()
+      return <%= singular %>ListResponseSchema.parse(json.data)
+    },
+  })
+}
+
+export function use<%= Singular %>(id: number) {
+  return useQuery({
+    queryKey: ["<%= name %>", id],
+    queryFn: async (): Promise<<%= Singular %>Record> => {
+      const res = await fetch(`${BASE}/${id}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      if (!res.ok) {
+        if (res.status === 404) throw new Error("<%= title %>不存在")
+        throw new Error(`获取<%= title %>失败 (${res.status})`)
+      }
+      const json = await res.json()
+      return select<%= Singular %>Schema.parse(json.data)
+    },
+    enabled: !!id,
+  })
+}
+
+// ========== 变更 Hooks ==========
+
+export function useCreate<%= Singular %>() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: <%= Singular %>Input) => {
+      const body = insert<%= Singular %>Schema.parse(input)
+      const res = await fetch(BASE, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.message ?? `创建<%= title %>失败 (${res.status})`)
+      }
+      const json = await res.json()
+      return select<%= Singular %>Schema.parse(json.data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["<%= name %>"] })
+      toast.success("<%= title %>创建成功")
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "<%= title %>创建失败")
+    },
+  })
+}
+
+export function useUpdate<%= Singular %>() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      input,
+    }: {
+      id: number
+      input: Partial<<%= Singular %>Input>
+    }) => {
+      const body = patch<%= Singular %>Schema.parse(input)
+      const res = await fetch(`${BASE}/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.message ?? `更新<%= title %>失败 (${res.status})`)
+      }
+      const json = await res.json()
+      return select<%= Singular %>Schema.parse(json.data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["<%= name %>"] })
+      toast.success("<%= title %>更新成功")
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "<%= title %>更新失败")
+    },
+  })
+}
+
+export function useDelete<%= Singular %>() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`${BASE}/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      if (!res.ok && res.status !== 204) {
+        throw new Error(`删除<%= title %>失败 (${res.status})`)
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["<%= name %>"] })
+      toast.success("<%= title %>删除成功")
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "<%= title %>删除失败")
+    },
+  })
+}

@@ -115,10 +115,7 @@ function parseFields(raw: string): FieldDef[] {
   if (fields.length === 0) {
     throw new Error("至少需要一个业务字段")
   }
-  const searchableCount = fields.filter((f) => f.searchable).length
-  if (searchableCount > 1) {
-    throw new Error("最多一个字段可标 (searchable)")
-  }
+  // 多个标 (searchable) 时取第一个；其余忽略，spec L40。
   return fields
 }
 
@@ -133,6 +130,20 @@ function buildCtx(args: Args): Ctx {
   if (!args.singular) throw new Error("缺少必填参数 --singular")
   if (!args.title) throw new Error("缺少必填参数 --title")
   if (!args.fields) throw new Error("缺少必填参数 --fields")
+
+  // 防路径穿越 + 模板注入：name/singular 只允许 [A-Za-z0-9_-]
+  // title 允许更宽（含中文），但剔除 ejs/script 闭合字符防止注入。
+  const IDENT_RE = /^[A-Za-z][A-Za-z0-9_-]*$/
+  if (!IDENT_RE.test(args.name)) {
+    throw new Error(`--name 必须匹配 ${IDENT_RE}：收到 "${args.name}"`)
+  }
+  if (!IDENT_RE.test(args.singular)) {
+    throw new Error(`--singular 必须匹配 ${IDENT_RE}：收到 "${args.singular}"`)
+  }
+  // title 不能含 ejs 起止标签与反引号（避免模板字面量注入）
+  if (/[<>%`]/.test(args.title)) {
+    throw new Error('--title 不可含 < > % ` 字符')
+  }
 
   const fields = parseFields(args.fields)
   const searchField = fields.find((f) => f.searchable)?.name ?? null
@@ -251,10 +262,17 @@ function render(ctx: Ctx, template: string): string {
     throw new Error(`模板不存在: ${path}`)
   }
   const src = readFileSync(path, "utf8")
-  return ejs.render(src, ctx, { async: false, delimiter: "%" })
+  return ejs.render(src, ctx, {
+    async: false,
+    delimiter: "%",
+    // 生成的是 TypeScript 源码而非 HTML；ejs 默认 HTML 转义会把 "
+    // 转成 &#34; 污染字面量字符串。改用恒等函数。
+    // 安全：buildCtx 已对 name/singular/title 做字符白名单，杜绝 ejs 注入。
+    escape: (s: string) => s,
+  })
 }
 
-function touchDir(p: string): void {
+function ensureDir(p: string): void {
   mkdirSync(p, { recursive: true })
 }
 
@@ -294,10 +312,11 @@ function main(): void {
 
   for (const f of files) {
     const abs = resolve(root, f.relPath)
-    touchDir(dirname(abs))
+    const existed = existsSync(abs)
+    ensureDir(dirname(abs))
     const content = render(ctx, f.template)
     writeFileSync(abs, content, "utf8")
-    console.log(`  ✓ ${f.relPath}`)
+    console.log(`  ${existed ? "↻ [覆盖]" : "✓"} ${f.relPath}`)
   }
 
   console.log()

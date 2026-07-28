@@ -1,0 +1,92 @@
+import {
+  count,
+  db,
+  desc as drizzleDesc,
+  asc as drizzleAsc,
+  eq,
+} from "@better-t-stack-template/db"
+import { <%= name %> } from "@better-t-stack-template/db/schema/<%= name %>"
+import * as HttpStatusCodes from "stoker/http-status-codes"
+import * as HttpStatusPhrases from "stoker/http-status-phrases"
+
+import { err, noContent, ok } from "~/lib/response-helpers"
+import type { AppRouteHandler } from "~/lib/type"
+
+import type {
+  CreateRoute,
+  GetOneRoute,
+  ListRoute,
+  RemoveRoute,
+  UpdateRoute,
+} from "./<%= name %>.routes"
+
+export const list: AppRouteHandler<ListRoute> = async (c) => {
+  const { page, pageSize, sort, order } = c.req.valid("query")
+
+  const orderFn = order === "asc" ? drizzleAsc : drizzleDesc
+
+  const sortColumn =
+    sort === "createdAt" ? <%= name %>.createdAt : <%= name %>.updatedAt
+
+  const items = await db.query.<%= name %>.findMany({
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+    orderBy: orderFn(sortColumn),
+  })
+  const [totalRow] = await db
+    .select({ total: count() })
+    .from(<%= name %>)
+
+  return ok(c, {
+    items,
+    total: totalRow?.total ?? 0,
+    page,
+    pageSize,
+  })
+}
+
+export const create: AppRouteHandler<CreateRoute> = async (c) => {
+  const item = c.req.valid("json")
+  const [inserted] = await db
+    .insert(<%= name %>)
+    .values(item)
+    .returning()
+  return ok(c, inserted ?? null)
+}
+
+export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+  const { id } = c.req.valid("param")
+  const item = await db.query.<%= name %>.findFirst({
+    where: (fields, { eq }) => eq(fields.id, id),
+  })
+  return ok(c, item ?? null)
+}
+
+export const update: AppRouteHandler<UpdateRoute> = async (c) => {
+  const { id } = c.req.valid("param")
+  const updates = c.req.valid("json")
+
+  const [item] = await db
+    .update(<%= name %>)
+    .set(updates)
+    .where(eq(<%= name %>.id, id))
+    .returning()
+  return ok(c, item ?? null)
+}
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+  const { id } = c.req.valid("param")
+
+  const result = await db
+    .delete(<%= name %>)
+    .where(eq(<%= name %>.id, id))
+  if (result.rowCount === 0) {
+    return err(
+      c,
+      HttpStatusPhrases.NOT_FOUND,
+      HttpStatusCodes.NOT_FOUND,
+    )
+  }
+
+  return noContent(c)
+}

@@ -1,0 +1,48 @@
+import { execSync } from "node:child_process"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+
+import { testClient } from "hono/testing"
+import {
+  describe,
+  beforeAll,
+  it,
+  expect,
+} from "vitest"
+
+import { createTestApp } from "~/lib/create-app"
+
+import router from "./<%= name %>.index"
+
+const root = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../../..",
+)
+
+if (process.env.NODE_ENV !== "test") {
+  throw new Error("NODE_ENV must be 'test'")
+}
+
+const client = testClient(createTestApp(router))
+
+/**
+ * 校验：缺少必填字段时返回 422。
+ * db:push 是为了让测试 app 启动时 schema 已就绪。
+ */
+describe("<%= name %> routes", () => {
+  beforeAll(async () => {
+    execSync("bun db:push", {
+      cwd: root,
+    })
+  })
+
+  it("post /api/v1/<%= name %> validates the body when creating", async () => {
+    // 故意传一个空对象触发 schema 校验失败 → 422
+    // 用 `as never` 让 TypeScript 接受缺字段的请求体（hono client
+    // 对 json 字段有类型校验，绕开它去断言后端真正的 422 行为）。
+    const response = await client.<%= name %>.$post({
+      json: {} as never,
+    })
+    expect(response.status).toBe(422)
+  })
+})

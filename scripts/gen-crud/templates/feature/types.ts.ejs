@@ -1,0 +1,52 @@
+import { z } from "zod"
+
+/** <%= title %>实体完整类型 */
+export type <%= Singular %>Record = {
+  id: number<% fields.forEach((f) => { %>
+  <%= f.name %>: <%= f.type === "text" ? "string" : f.type === "boolean" ? "boolean" : f.type === "number" ? "number" : "Date" %><% }) %>
+  createdAt: Date
+  updatedAt: Date
+}
+
+/** <%= title %>列表查询参数 */
+export type <%= Singular %>ListParams = {
+  search?: string
+  page?: number
+  pageSize?: number
+  sort?: "createdAt" | "updatedAt"
+  order?: "asc" | "desc"
+}
+
+/** <%= title %>列表查询响应 */
+export type <%= Singular %>ListResponse = {
+  items: <%= Singular %>Record[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+// ====== Zod 校验 schema（与 server 端一致） ======
+
+/** 服务端返回的 <%= singular %> 对象校验 */
+export const select<%= Singular %>Schema = z.object({
+  id: z.number(),<% fields.forEach((f) => { %>
+  <%= f.name %>: <%= f.type === "text" ? "z.string()" : f.type === "boolean" ? "z.boolean()" : f.type === "number" ? "z.number()" : "z.coerce.date()" %>,<% }) %>
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+/** 创建 <%= singular %> 请求体校验 */
+export const insert<%= Singular %>Schema = z.object({<% fields.forEach((f) => { %>
+  <%= f.name %>: <%= f.type === "text" ? "z.string().min(1).max(500)" : f.type === "boolean" ? "z.boolean()" : f.type === "number" ? "z.number()" : "z.string()" %>,<% }) %>
+})
+
+/** 更新 <%= singular %> 请求体校验（全部字段可选） */
+export const patch<%= Singular %>Schema = insert<%= Singular %>Schema.partial()
+
+/** 分页列表响应校验 */
+export const <%= singular %>ListResponseSchema = z.object({
+  items: z.array(select<%= Singular %>Schema),
+  total: z.number(),
+  page: z.number(),
+  pageSize: z.number(),
+})

@@ -23,6 +23,7 @@ bun run gen:crud -- \
 | `--title` | ✅ | 实体中文标题，用于菜单标题、面包屑、页面 H1、Toast 文案（如 `文章`） |
 | `--fields` | ✅ | 业务字段列表，逗号分隔，每项 `<name>:<type>(<flags>)` |
 | `--force` | 否 | 目标路径已存在时整体覆盖；默认整体中止 |
+| `--dry-run` | 否 | 仅打印将写入的文件清单，不实际写盘 |
 
 ### 字段类型与 UI 控件映射
 
@@ -37,7 +38,7 @@ bun run gen:crud -- \
 
 | flag | 适用类型 | 作用 |
 |---|---|---|
-| `searchable` | text | 列表页搜索框用此字段，`searchKey="<name>"`（最多一个；多个时取第一个） |
+| `searchable` | text | 列表页搜索框用此字段，`searchKey="<name>"`（多个标 searchable 时取第一个） |
 
 ### 硬编码字段
 
@@ -54,7 +55,7 @@ bun run gen:crud -- \
 - `--singular post` → 前端路由 `$postId`、详情页 `PostDetailPage`、`{ postId: string }` 入参。
 - 不内置任何自动单数化（如 `posts → post`、`categories → category`），全部由 CLI 显式传入。
 
-## 生成文件清单（共 14 个）
+## 生成文件清单（共 17 个）
 
 ### 后端（4 个）
 ```

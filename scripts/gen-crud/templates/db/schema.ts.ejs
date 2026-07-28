@@ -1,18 +1,18 @@
 import {
   pgTable,
   serial,
-  timestamp,<%_ const usedTypes = new Set(fields.map((f) => f.type)); if (usedTypes.has("text")) { _%>
-  text,<%_ } if (usedTypes.has("boolean")) { _%>
-  boolean,<%_ } if (usedTypes.has("number")) { _%>
-  integer,<%_ } _%>
+  timestamp,<%
+%><% for (const t of ["text","boolean","number"]) { if (fields.some(f => f.type === t)) { %>
+  <%= t === "number" ? "integer" : t %>,<% } } %>
 } from "drizzle-orm/pg-core"
 import { createInsertSchema } from "drizzle-zod"
 import { createSelectSchema } from "drizzle-zod"
 
 export const <%= name %> = pgTable("<%= name %>", {
-  id: serial("id").primaryKey(),<%_ fields.forEach((f) => { _%>
-  <%= f.name %>: <%= f.type === "text" ? "text" : f.type === "boolean" ? "boolean" : f.type === "number" ? "integer" : "timestamp" %>("<%= f.name %>").notNull()<%= f.type === "boolean" ? ".default(false)" : "" %>,<%_ if (f.type === "date") { %>
-  // date 字段：客户端传 Date 对象，存为 timestamp<%_ } _%><%_ }) _%>
+  id: serial("id").primaryKey(),<%
+%><% fields.forEach((f) => { %>
+  <%= f.name %>: <%= { text: "text", boolean: "boolean", number: "integer", date: "timestamp" }[f.type] %>("<%= f.name %>").notNull()<%= f.type === "boolean" ? ".default(false)" : "" %>,<%
+%><% }) %>
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -22,11 +22,15 @@ export const <%= name %> = pgTable("<%= name %>", {
 
 export const select<%= Name %>Schema = createSelectSchema(<%= name %>)
 
-export const insert<%= Name %>Schema = createInsertSchema(<%= name %>, {<%_ fields.filter((f) => f.type === "text").forEach((f) => { _%>
-  <%= f.name %>: (field) => field.min(1).max(500),<%_ }) _%>
+export const insert<%= Name %>Schema = createInsertSchema(<%= name %>, {<%
+%><% fields.filter(f => f.type === "text").forEach((f) => { %>
+  <%= f.name %>: (field) => field.min(1).max(500),<%
+%><% }) %>
 })
-  .required({<%_ fields.filter((f) => f.type === "boolean").forEach((f) => { _%>
-    <%= f.name %>: true,<%_ }) _%>
+  .required({<%
+%><% fields.filter(f => f.type === "boolean").forEach((f) => { %>
+    <%= f.name %>: true,<%
+%><% }) %>
   })
   .omit({
     id: true,

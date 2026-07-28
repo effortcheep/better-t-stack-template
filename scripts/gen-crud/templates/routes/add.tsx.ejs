@@ -1,0 +1,14 @@
+import { createFileRoute } from "@tanstack/react-router"
+import { requirePermission } from "@/lib/route-guard"
+
+import Add<%= Singular %>Page from "@/features/<%= name %>/pages/add"
+
+export const Route = createFileRoute(
+  "/_authenticated/<%= name %>/add",
+)({
+  beforeLoad: () => {
+    requirePermission("<%= name %>:create")
+  },
+  staticData: { breadcrumbs: [{ label: "<%= title %>管理", href: "/<%= name %>" }, { label: "新建<%= title %>" }] },
+  component: Add<%= Singular %>Page,
+})

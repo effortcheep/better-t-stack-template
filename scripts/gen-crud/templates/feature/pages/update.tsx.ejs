@@ -1,0 +1,99 @@
+import { Button } from "@better-t-stack-template/ui/components/button"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@better-t-stack-template/ui/components/empty"
+import { Skeleton } from "@better-t-stack-template/ui/components/skeleton"
+import { useNavigate } from "@tanstack/react-router"
+import { SearchIcon } from "lucide-react"
+import { useState } from "react"
+
+import { <%= Singular %>Form } from "@/features/<%= name %>/components/<%= singular %>-form"
+import { use<%= Singular %>, useUpdate<%= Singular %> } from "@/features/<%= name %>/api"
+
+export interface Update<%= Singular %>PageProps {
+  <%= singular %>Id: string
+}
+
+export default function Update<%= Singular %>Page({
+  <%= singular %>Id,
+}: Update<%= Singular %>PageProps) {
+  const id = Number(<%= singular %>Id)
+  const navigate = useNavigate()
+  const { data, isLoading } = use<%= Singular %>(id)
+  const updateMutation = useUpdate<%= Singular %>()
+  const [isDirty, setIsDirty] = useState(false)
+
+  if (isLoading) {
+    return (
+      <div className="flex w-full flex-1 flex-col gap-4 p-4 pt-0">
+        <Skeleton className="h-7 w-20" />
+        <Skeleton className="h-18 w-full rounded-xl" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-4 pt-0">
+        <Empty>
+          <EmptyMedia variant="icon">
+            <SearchIcon className="size-8 text-muted-foreground/60" />
+          </EmptyMedia>
+          <EmptyHeader>
+            <EmptyTitle><%= title %>不存在</EmptyTitle>
+            <EmptyDescription>
+              该<%= title %>可能已被删除
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button
+              onClick={() => navigate({ to: "/<%= name %>" })}
+            >
+              返回列表
+            </Button>
+          </EmptyContent>
+        </Empty>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex w-full max-w-3xl flex-1 flex-col gap-4 p-4 pt-0">
+      {/* 页头 */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            编辑<%= title %>
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {isDirty
+              ? "有未保存的修改"
+              : `正在编辑<% if (searchField) { %>「${data.<%= searchField %>}」<% } else { %>#{data.id}<% } %>`}
+          </p>
+        </div>
+      </div>
+
+      <<%= Singular %>Form
+        defaultValues={data}
+        onSubmit={(values) =>
+          updateMutation.mutate(
+            { id, input: values },
+            {
+              onSuccess: () =>
+                navigate({ to: "/<%= name %>" }),
+            },
+          )
+        }
+        isPending={updateMutation.isPending}
+        onDirtyChange={setIsDirty}
+        onCancel={() => navigate({ to: "/<%= name %>" })}
+      />
+    </div>
+  )
+}

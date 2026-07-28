@@ -1,0 +1,112 @@
+import {
+  select<%= Name %>Schema,
+  insert<%= Name %>Schema,
+  patch<%= Name %>Schema,
+} from "@better-t-stack-template/db/schema/<%= name %>"
+import { createRoute } from "@hono/zod-openapi"
+import * as HttpStatusCodes from "stoker/http-status-codes"
+import {
+  createErrorSchema,
+  IdParamsSchema,
+} from "stoker/openapi/schemas"
+
+import {
+  bodyContent,
+  bodyContentRequired,
+  jsonContent,
+  paginatedSchema,
+  paginationQuerySchema,
+} from "~/lib/response-helpers"
+
+const tags = ["<%= Name %>"]
+
+export const list = createRoute({
+  path: "/<%= name %>",
+  method: "get",
+  request: {
+    query: paginationQuerySchema,
+  },
+  tags,
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      paginatedSchema(select<%= Name %>Schema),
+      "The paginated list of <%= name %>",
+    ),
+  },
+})
+
+export const create = createRoute({
+  path: "/<%= name %>",
+  method: "post",
+  request: {
+    body: bodyContentRequired(
+      insert<%= Name %>Schema,
+      "The <%= singular %> to create",
+    ),
+  },
+  tags,
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      select<%= Name %>Schema,
+      "The created <%= singular %>",
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(insert<%= Name %>Schema),
+      "The validation error(s)",
+    ),
+  },
+})
+
+export const getOne = createRoute({
+  path: "/<%= name %>/{id}",
+  method: "get",
+  request: {
+    params: IdParamsSchema,
+  },
+  tags,
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      select<%= Name %>Schema,
+      "The requested <%= singular %>",
+    ),
+  },
+})
+
+export const update = createRoute({
+  path: "/<%= name %>/{id}",
+  method: "patch",
+  request: {
+    params: IdParamsSchema,
+    body: bodyContent(
+      patch<%= Name %>Schema,
+      "The <%= singular %> to update",
+    ),
+  },
+  tags,
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      select<%= Name %>Schema,
+      "The updated <%= singular %>",
+    ),
+  },
+})
+
+export const remove = createRoute({
+  path: "/<%= name %>/{id}",
+  method: "delete",
+  request: {
+    params: IdParamsSchema,
+  },
+  tags,
+  responses: {
+    [HttpStatusCodes.NO_CONTENT]: {
+      description: "<%= Singular %> deleted",
+    },
+  },
+})
+
+export type ListRoute = typeof list
+export type CreateRoute = typeof create
+export type UpdateRoute = typeof update
+export type GetOneRoute = typeof getOne
+export type RemoveRoute = typeof remove

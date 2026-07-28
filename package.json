@@ -42,7 +42,8 @@
     "docker:build": "docker compose build",
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f"
+    "docker:logs": "docker compose logs -f",
+    "gen:crud": "bun run scripts/gen-crud.ts"
   },
   "dependencies": {
     "@better-t-stack-template/env": "workspace:*",
@@ -52,6 +53,7 @@
   "devDependencies": {
     "@better-t-stack-template/config": "workspace:*",
     "@types/bun": "catalog:",
+    "ejs": "^6.0.1",
     "eslint-plugin-perfectionist": "^5.10.0",
     "oxfmt": "^0.53.0",
     "oxlint": "^1.68.0",

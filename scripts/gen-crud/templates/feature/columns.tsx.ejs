@@ -1,0 +1,218 @@
+import { Button } from "@better-t-stack-template/ui/components/button"
+import { Checkbox } from "@better-t-stack-template/ui/components/checkbox"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@better-t-stack-template/ui/components/dropdown-menu"<% if (fields.some((f) => f.type === "boolean")) { %>
+import { Switch } from "@better-t-stack-template/ui/components/switch"<% } %>
+import { Link } from "@tanstack/react-router"
+import { createColumnHelper } from "@tanstack/react-table"
+import {
+  MoreHorizontalIcon,
+  PencilIcon,
+  Trash2Icon,
+  ViewIcon,
+} from "lucide-react"
+import * as React from "react"
+
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
+import { DataTableColumnHeader } from "@/components/data-table"
+import type { <%= Singular %>Record } from "@/features/<%= name %>/types"
+
+const columnHelper = createColumnHelper<<%= Singular %>Record>()
+
+export function <%= singular %>Columns(
+  onDelete: (id: number) => void,
+) {
+  return [
+    columnHelper.display({
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(checked) =>
+            table.toggleAllPageRowsSelected(!!checked)
+          }
+          aria-label="全选"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(checked) =>
+            row.toggleSelected(!!checked)
+          }
+          aria-label="选择行"
+        />
+      ),
+      meta: { className: "w-12" },
+      enableSorting: false,
+      enableHiding: false,
+    }),
+
+    columnHelper.accessor("id", {
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="#" />
+      ),
+      cell: ({ getValue }) => (
+        <span className="text-xs tabular-nums text-muted-foreground">
+          {getValue()}
+        </span>
+      ),
+      meta: { className: "w-16" },
+      enableSorting: false,
+    }),<% fields.forEach((f) => { %>
+
+    columnHelper.accessor("<%= f.name %>", {
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="<%= f.name %>" />
+      ),<% if (f.type === "boolean") { %>
+      cell: ({ getValue }) => (
+        <Switch
+          checked={getValue()}
+          aria-readonly
+          className="pointer-events-none"
+        />
+      ),
+      meta: { className: "w-24" },<% } else if (f.type === "date") { %>
+      cell: ({ getValue }) => {
+        const d = getValue()
+        return (
+          <span className="text-sm text-muted-foreground">
+            {d.toLocaleString("zh-CN", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        )
+      },
+      meta: { className: "w-44" },
+      sortingFn: "datetime",<% } else if (f.searchable) { %>
+      cell: ({ getValue, row }) => (
+        <Link
+          to="/<%= name %>/$<%= singular %>Id"
+          params={{ <%= singular %>Id: String(row.original.id) }}
+          className="font-medium hover:underline"
+        >
+          {getValue()}
+        </Link>
+      ),<% } else { %>
+      cell: ({ getValue }) => (
+        <span className="text-sm">{getValue()}</span>
+      ),<% } %>
+    }),<% }) %>
+
+    columnHelper.accessor("createdAt", {
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="创建时间" />
+      ),
+      cell: ({ getValue }) => {
+        const d = getValue()
+        return (
+          <span className="text-sm text-muted-foreground">
+            {d.toLocaleString("zh-CN", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        )
+      },
+      meta: { className: "w-44" },
+      sortingFn: "datetime",
+    }),
+
+    columnHelper.display({
+      id: "actions",
+      cell: ({ row }) => {
+        const [showDeleteDialog, setShowDeleteDialog] =
+          React.useState(false)
+
+        return (
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                nativeButton={true}
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                  />
+                }
+              >
+                <MoreHorizontalIcon className="size-4" />
+                <span className="sr-only">操作</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    render={
+                      <Link
+                        to="/<%= name %>/$<%= singular %>Id"
+                        params={{
+                          <%= singular %>Id: String(row.original.id),
+                        }}
+                      >
+                        <ViewIcon data-icon="inline-start" />
+                        查看
+                      </Link>
+                    }
+                  />
+                  <DropdownMenuItem
+                    render={
+                      <Link
+                        to="/<%= name %>/$<%= singular %>Id/update"
+                        params={{
+                          <%= singular %>Id: String(row.original.id),
+                        }}
+                      >
+                        <PencilIcon data-icon="inline-start" />
+                        编辑
+                      </Link>
+                    }
+                  />
+                </DropdownMenuGroup>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setShowDeleteDialog(true)
+                    }}
+                  >
+                    <Trash2Icon
+                      data-icon="inline-start"
+                      className="text-destructive"
+                    />
+                    删除
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <ConfirmDeleteDialog
+              open={showDeleteDialog}
+              onOpenChange={setShowDeleteDialog}
+              onConfirm={() => {
+                onDelete(row.original.id)
+              }}
+              description={`确定要删除<% if (searchField) { %>「${row.original.<%= searchField %>}」<% } else { %>#{row.original.id}<% } %>吗？此操作不可撤销。`}
+            />
+          </>
+        )
+      },
+      meta: { className: "w-12" },
+      enableSorting: false,
+      enableHiding: false,
+    }),
+  ]
+}

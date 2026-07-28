@@ -1,0 +1,19 @@
+import { createFileRoute } from "@tanstack/react-router"
+import { requirePermission } from "@/lib/route-guard"
+
+import <%= Singular %>DetailPage from "@/features/<%= name %>/pages/$<%= singular %>Id"
+
+export const Route = createFileRoute(
+  "/_authenticated/<%= name %>/$<%= singular %>Id/",
+)({
+  beforeLoad: () => {
+    requirePermission("<%= name %>:read")
+  },
+  staticData: { breadcrumbs: [{ label: "<%= title %>管理", href: "/<%= name %>" }, { label: "详情" }] },
+  component: RouteComponent,
+})
+
+function RouteComponent() {
+  const { <%= singular %>Id } = Route.useParams()
+  return <<%= Singular %>DetailPage <%= singular %>Id={<%= singular %>Id} />
+}
