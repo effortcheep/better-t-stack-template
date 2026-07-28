@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { TEMPLATE_PERMISSIONS } from "@/lib/permissions"
 import { requirePermission } from "@/lib/route-guard"
 import { z } from "zod"
 
@@ -16,7 +17,7 @@ export const Route = createFileRoute(
   "/_authenticated/template/",
 )({
   beforeLoad: () => {
-    requirePermission("tasks:read")
+    requirePermission(TEMPLATE_PERMISSIONS.read)
   },
   validateSearch: searchSchema,
   staticData: { breadcrumbs: [{ label: "模板管理", href: "/template" }, { label: "模板列表" }] },

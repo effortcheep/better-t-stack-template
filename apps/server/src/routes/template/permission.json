@@ -1,0 +1,9 @@
+{
+  "module": "template",
+  "permissions": [
+    { "code": "template:read", "description": "查看模板" },
+    { "code": "template:create", "description": "创建模板" },
+    { "code": "template:update", "description": "更新模板" },
+    { "code": "template:delete", "description": "删除模板" }
+  ]
+}

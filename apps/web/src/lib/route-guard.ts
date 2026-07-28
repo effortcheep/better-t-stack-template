@@ -17,16 +17,13 @@ import { usePermissions } from "@/stores/permissions"
  * })
  * ```
  *
- * 注意：必须在 React 组件上下文内调用（beforeLoad 运行在组件树中）。
+ * 注意：必须在权限 store 完成加载后调用。
  * 如果在纯 loader（非组件树）中需要权限检查，请使用 store.getState().has()。
  */
 export function requirePermission(perm: string): void {
   const { isLoaded, has } = usePermissions.getState()
 
-  /* 权限尚未加载 — 跳过一次（组件 mount 后会重新校验） */
-  if (!isLoaded) return
-
-  if (!has(perm)) {
+  if (!isLoaded || !has(perm)) {
     throw new AppError(403)
   }
 }
@@ -38,6 +35,5 @@ export function requirePermission(perm: string): void {
  */
 export function checkPermission(perm: string): boolean {
   const { isLoaded, has } = usePermissions.getState()
-  if (!isLoaded) return true // 未加载时放行，组件层会抛 403
-  return has(perm)
+  return isLoaded && has(perm)
 }

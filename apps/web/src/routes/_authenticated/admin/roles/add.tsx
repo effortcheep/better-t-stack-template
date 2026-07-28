@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { ROLE_PERMISSIONS } from "@/lib/permissions"
 import { requirePermission } from "@/lib/route-guard"
 
 import AddRolePage from "@/features/admin/pages/roles/add"
 
 export const Route = createFileRoute("/_authenticated/admin/roles/add")({
   beforeLoad: () => {
-    requirePermission("roles:manage")
+    requirePermission(ROLE_PERMISSIONS.manage)
   },
   staticData: {
     breadcrumbs: [

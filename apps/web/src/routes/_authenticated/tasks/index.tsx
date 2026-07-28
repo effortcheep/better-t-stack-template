@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { TASK_PERMISSIONS } from "@/lib/permissions"
 import { requirePermission } from "@/lib/route-guard"
 import { z } from "zod"
 
@@ -16,7 +17,7 @@ export const Route = createFileRoute(
   "/_authenticated/tasks/",
 )({
   beforeLoad: () => {
-    requirePermission("tasks:read")
+    requirePermission(TASK_PERMISSIONS.read)
   },
   validateSearch: searchSchema,
   staticData: { breadcrumbs: [{ label: "任务管理", href: "/tasks" }, { label: "任务列表" }] },

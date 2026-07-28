@@ -1,0 +1,9 @@
+{
+  "module": "projects",
+  "permissions": [
+    { "code": "projects:read", "description": "查看项目" },
+    { "code": "projects:create", "description": "创建项目" },
+    { "code": "projects:update", "description": "更新项目" },
+    { "code": "projects:delete", "description": "删除项目" }
+  ]
+}

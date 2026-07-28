@@ -13,56 +13,76 @@ interface PermissionsState {
   isLoaded: boolean
   /** 从服务端获取权限 */
   fetch: () => Promise<void>
+  /** 确保权限已加载，避免路由守卫在首屏放行 */
+  ensureLoaded: () => Promise<void>
   /** 检查是否持有目标权限（含通配 *:* 展开） */
   has: (perm: string) => boolean
   /** 清空（登出时调用） */
   clear: () => void
 }
 
-export const usePermissions = create<PermissionsState>(
-  (set, get) => ({
-    permissions: new Set(),
-    isLoaded: false,
+let inFlightPermissionsFetch: Promise<void> | null = null
 
-    fetch: async () => {
-      const token = getToken()
-      if (!token) {
-        set({ permissions: new Set(), isLoaded: true })
+export const usePermissions = create<PermissionsState>(
+  (set, get) => {
+    const loadPermissions = async () => {
+      if (get().isLoaded) return
+      if (inFlightPermissionsFetch) {
+        await inFlightPermissionsFetch
         return
       }
 
-      try {
-        const res = await fetch(`${env.VITE_SERVER_URL}/api/v1/me/permissions`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!res.ok) {
+      inFlightPermissionsFetch = (async () => {
+        const token = getToken()
+        if (!token) {
           set({ permissions: new Set(), isLoaded: true })
           return
         }
-        const body = (await res.json()) as {
-          ret: number
-          msg: string
-          data: string[]
+
+        try {
+          const res = await fetch(`${env.VITE_SERVER_URL}/api/v1/me/permissions`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (!res.ok) {
+            set({ permissions: new Set(), isLoaded: true })
+            return
+          }
+          const body = (await res.json()) as {
+            ret: number
+            msg: string
+            data: string[]
+          }
+          const perms = body.data ?? []
+          set({
+            permissions: new Set(perms),
+            isLoaded: true,
+          })
+        } catch {
+          set({ permissions: new Set(), isLoaded: true })
         }
-        const perms = body.data ?? []
-        set({
-          permissions: new Set(perms),
-          isLoaded: true,
-        })
-      } catch {
-        set({ permissions: new Set(), isLoaded: true })
-      }
-    },
+      })().finally(() => {
+        inFlightPermissionsFetch = null
+      })
 
-    has: (perm: string) => {
-      const { permissions } = get()
-      return (
-        permissions.has(WILDCARD) || permissions.has(perm)
-      )
-    },
+      await inFlightPermissionsFetch
+    }
 
-    clear: () => {
-      set({ permissions: new Set(), isLoaded: false })
-    },
-  }),
+    return {
+      permissions: new Set(),
+      isLoaded: false,
+
+      fetch: loadPermissions,
+      ensureLoaded: loadPermissions,
+
+      has: (perm: string) => {
+        const { permissions } = get()
+        return permissions.has(WILDCARD) || permissions.has(perm)
+      },
+
+      clear: () => {
+        inFlightPermissionsFetch = null
+        set({ permissions: new Set(), isLoaded: false })
+      },
+    }
+  },
 )

@@ -1,0 +1,10 @@
+{
+  "module": "users",
+  "permissions": [
+    { "code": "users:read", "description": "查看用户" },
+    { "code": "users:create", "description": "创建用户" },
+    { "code": "users:update", "description": "更新用户" },
+    { "code": "users:delete", "description": "删除用户" },
+    { "code": "users:assign", "description": "分配用户角色" }
+  ]
+}

@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { requirePermission } from "@/lib/route-guard"
+import { PROJECT_PERMISSIONS } from "@/lib/permissions"
 
 import ProjectAddPage from "@/features/projects/pages/add"
 
 export const Route = createFileRoute("/_authenticated/projects/add")({
   beforeLoad: () => {
-    requirePermission("tasks:create")
+    requirePermission(PROJECT_PERMISSIONS.create)
   },
   staticData: {
     breadcrumbs: [

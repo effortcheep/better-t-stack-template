@@ -24,9 +24,15 @@ import {
 } from "@better-t-stack-template/ui/components/breadcrumb"
 import { Separator } from "@better-t-stack-template/ui/components/separator"
 import { AppSidebar } from "@/components/app-sidebar"
+import { getToken } from "@/lib/auth"
 import { useAuth } from "@/stores/auth"
+import { usePermissions } from "@/stores/permissions"
 
 export const Route = createFileRoute("/_authenticated")({
+  beforeLoad: async () => {
+    if (!getToken()) return
+    await usePermissions.getState().ensureLoaded()
+  },
   component: RouteComponent,
 })
 

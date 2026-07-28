@@ -98,7 +98,7 @@ export function AppSidebar({
 }: React.ComponentProps<typeof Sidebar>) {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { isLoaded, fetch, has } = usePermissions()
+  const { isLoaded, fetch, has, clear } = usePermissions()
 
   /* 登录后自取一次权限 */
   useEffect(() => {
@@ -115,6 +115,7 @@ export function AppSidebar({
 
   const handleLogout = async () => {
     await logout()
+    clear()
     navigate({ to: "/login", replace: true })
   }
 
