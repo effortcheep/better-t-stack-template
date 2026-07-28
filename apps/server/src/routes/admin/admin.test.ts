@@ -2,12 +2,18 @@ import { execSync } from "node:child_process"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { testClient } from "hono/testing"
-import { describe, beforeAll, afterAll, it, expect } from "vitest"
-
-import { createTestApp } from "~/lib/create-app"
 import { db, sql } from "@better-t-stack-template/db"
 import { roles } from "@better-t-stack-template/db/schema/authz"
+import { testClient } from "hono/testing"
+import {
+  describe,
+  beforeAll,
+  afterAll,
+  it,
+  expect,
+} from "vitest"
+
+import { createTestApp } from "~/lib/create-app"
 
 import adminRouter from "./admin.index"
 
@@ -22,6 +28,46 @@ if (process.env.NODE_ENV !== "test") {
 
 const client = testClient(createTestApp(adminRouter))
 
+type ApiEnvelope<T> = {
+  ret: number
+  msg: string
+  data: T | null
+}
+
+type CreatedUser = {
+  id: string
+  name: string
+  email: string
+  username: string | null
+  emailVerified: boolean
+  createdAt: string
+  updatedAt: string
+  roles: Array<{ id: string; name: string }>
+}
+
+type UserListPage = {
+  items: Array<{ name: string }>
+  total: number
+  page: number
+  pageSize: number
+}
+
+type UserDetail = {
+  id: string
+  email: string
+  name: string
+  roles: unknown[]
+}
+
+type Role = {
+  name: string
+}
+
+function expectData<T>(body: ApiEnvelope<T>): T {
+  expect(body.data).not.toBeNull()
+  return body.data as T
+}
+
 describe("admin routes", () => {
   let testUserId: string
   let testRoleId: string
@@ -31,7 +77,10 @@ describe("admin routes", () => {
       cwd: root,
       env: {
         ...process.env,
-        DOTENV_CONFIG_PATH: path.resolve(root, "apps/server/.env.test"),
+        DOTENV_CONFIG_PATH: path.resolve(
+          root,
+          "apps/server/.env.test",
+        ),
       },
     })
     await db.execute(
@@ -67,13 +116,14 @@ describe("admin routes", () => {
       },
     })
     expect(res.status).toBe(201)
-    const body = await res.json()
+    const body = (await res.json()) as ApiEnvelope<CreatedUser>
     expect(body.ret).toBe(0)
-    expect(body.data).toHaveProperty("id")
-    expect(body.data.email).toBe(email)
-    expect(body.data.name).toBe("测试用户")
-    expect(body.data.roles).toEqual([])
-    testUserId = body.data.id as string
+    const data = expectData(body)
+    expect(data).toHaveProperty("id")
+    expect(data.email).toBe(email)
+    expect(data.name).toBe("测试用户")
+    expect(data.roles).toEqual([])
+    testUserId = data.id
   })
 
   it("POST /users — 重复邮箱返回错误", async () => {
@@ -98,7 +148,7 @@ describe("admin routes", () => {
         username: `dup2_${crypto.randomUUID().slice(0, 8)}`,
       },
     })
-    const body2 = await res2.json()
+    const body2 = (await res2.json()) as ApiEnvelope<null>
     expect(res2.status).toBe(200)
     expect(body2.ret).toBe(-1)
     expect(body2.msg).toBeTruthy()
@@ -110,26 +160,30 @@ describe("admin routes", () => {
       query: { page: "1", pageSize: "10" },
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as ApiEnvelope<UserListPage>
     expect(body.ret).toBe(0)
-    expect(body.data).toHaveProperty("items")
-    expect(body.data).toHaveProperty("total")
-    expect(body.data).toHaveProperty("page", 1)
-    expect(body.data).toHaveProperty("pageSize", 10)
-    expect(Array.isArray(body.data.items)).toBe(true)
+    const data = expectData(body)
+    expect(data).toHaveProperty("items")
+    expect(data).toHaveProperty("total")
+    expect(data).toHaveProperty("page", 1)
+    expect(data).toHaveProperty("pageSize", 10)
+    expect(Array.isArray(data.items)).toBe(true)
   })
 
   it("GET /users — 空列表时 total=0", async () => {
     // 清空所有用户后验证
-    await db.execute(sql`TRUNCATE TABLE user_roles, account, "user" CASCADE`)
+    await db.execute(
+      sql`TRUNCATE TABLE user_roles, account, "user" CASCADE`,
+    )
     const res = await client.users.$get({
       query: { page: "1", pageSize: "10" },
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as ApiEnvelope<UserListPage>
     expect(body.ret).toBe(0)
-    expect(body.data.total).toBe(0)
-    expect(body.data.items).toEqual([])
+    const data = expectData(body)
+    expect(data.total).toBe(0)
+    expect(data.items).toEqual([])
 
     // 恢复：重新创建一个测试用户供后续用例使用
     const email = `search-${crypto.randomUUID().slice(0, 8)}@example.com`
@@ -141,20 +195,25 @@ describe("admin routes", () => {
         username: "search_test",
       },
     })
-    testUserId = (await createRes.json()).data.id as string
+    testUserId = expectData(
+      (await createRes.json()) as ApiEnvelope<CreatedUser>,
+    ).id
   })
 
   it("GET /users — 搜索功能", async () => {
     const res = await client.users.$get({
-      query: { page: "1", pageSize: "10", search: "search_test" },
+      query: {
+        page: "1",
+        pageSize: "10",
+        search: "search_test",
+      },
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as ApiEnvelope<UserListPage>
     expect(body.ret).toBe(0)
-    expect(body.data.items.length).toBeGreaterThanOrEqual(1)
-    const names = body.data.items.map(
-      (item: { name: string }) => item.name,
-    )
+    const data = expectData(body)
+    expect(data.items.length).toBeGreaterThanOrEqual(1)
+    const names = data.items.map((item) => item.name)
     expect(names).toContain("搜索测试")
   })
 
@@ -164,13 +223,14 @@ describe("admin routes", () => {
       param: { id: testUserId },
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as ApiEnvelope<UserDetail>
     expect(body.ret).toBe(0)
-    expect(body.data.id).toBe(testUserId)
-    expect(body.data).toHaveProperty("email")
-    expect(body.data).toHaveProperty("name")
-    expect(body.data).toHaveProperty("roles")
-    expect(Array.isArray(body.data.roles)).toBe(true)
+    const data = expectData(body)
+    expect(data.id).toBe(testUserId)
+    expect(data).toHaveProperty("email")
+    expect(data).toHaveProperty("name")
+    expect(data).toHaveProperty("roles")
+    expect(Array.isArray(data.roles)).toBe(true)
   })
 
   it("GET /users/{id} — 不存在的用户", async () => {
@@ -186,7 +246,9 @@ describe("admin routes", () => {
 
   it("POST /users/{id}/change-password — 修改密码", async () => {
     if (!testUserId) throw new Error("前置：用户未创建")
-    const res = await client.users[":id"]["change-password"].$post({
+    const res = await client.users[":id"][
+      "change-password"
+    ].$post({
       param: { id: testUserId },
       json: { password: "newpassword123" },
     })
@@ -197,9 +259,10 @@ describe("admin routes", () => {
 
   it("POST /users/{id}/change-password — 短密码验证失败", async () => {
     if (!testUserId) throw new Error("前置：用户未创建")
-    const res = await client.users[":id"]["change-password"].$post({
+    const res = await client.users[":id"][
+      "change-password"
+    ].$post({
       param: { id: testUserId },
-      // @ts-expect-error 故意传短密码测试 Zod 校验
       json: { password: "short" },
     })
     expect(res.status).toBe(422)
@@ -213,10 +276,11 @@ describe("admin routes", () => {
       param: { userId: testUserId },
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as ApiEnvelope<Role[]>
     expect(body.ret).toBe(0)
-    expect(Array.isArray(body.data)).toBe(true)
-    expect(body.data.length).toBe(0)
+    const data = expectData(body)
+    expect(Array.isArray(data)).toBe(true)
+    expect(data.length).toBe(0)
   })
 
   it("POST /users/{userId}/roles — 分配角色", async () => {
@@ -227,9 +291,9 @@ describe("admin routes", () => {
       json: { roleId: testRoleId },
     })
     expect(res.status).toBe(201)
-    const body = await res.json()
+    const body = (await res.json()) as ApiEnvelope<Role>
     expect(body.ret).toBe(0)
-    expect(body.data.name).toBe("admin")
+    expect(expectData(body).name).toBe("admin")
   })
 
   it("POST /users/{userId}/roles — 幂等分配已存在角色", async () => {
@@ -240,15 +304,17 @@ describe("admin routes", () => {
       json: { roleId: testRoleId },
     })
     expect(res.status).toBe(201)
-    const body = await res.json()
+    const body = (await res.json()) as ApiEnvelope<Role>
     expect(body.ret).toBe(0)
-    expect(body.data.name).toBe("admin")
+    expect(expectData(body).name).toBe("admin")
   })
 
   it("DELETE /users/{userId}/roles/{roleId} — 撤销角色", async () => {
     if (!testUserId) throw new Error("前置：用户未创建")
     if (!testRoleId) throw new Error("前置：角色未创建")
-    const res = await client.users[":userId"].roles[":roleId"].$delete({
+    const res = await client.users[":userId"].roles[
+      ":roleId"
+    ].$delete({
       param: { userId: testUserId, roleId: testRoleId },
     })
     expect(res.status).toBe(204)
@@ -256,14 +322,20 @@ describe("admin routes", () => {
 
   it("DELETE /users/{userId}/roles/{roleId} — 撤销不存在的角色", async () => {
     if (!testUserId) throw new Error("前置：用户未创建")
-    const res = await client.users[":userId"].roles[":roleId"].$delete({
-      param: { userId: testUserId, roleId: crypto.randomUUID() },
+    const res = await client.users[":userId"].roles[
+      ":roleId"
+    ].$delete({
+      param: {
+        userId: testUserId,
+        roleId: crypto.randomUUID(),
+      },
     })
     // unassignUserRole 返回 err() => status 404 with JSON body
     expect(res.status).toBe(404)
-    const body = await res.json()
+    const body = (await res.json()) as ApiEnvelope<null>
     expect(body.ret).toBe(-1)
     expect(body.msg).toBe("用户角色项不存在")
     expect(body.data).toBeNull()
   })
 })
+

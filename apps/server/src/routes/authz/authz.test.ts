@@ -2,6 +2,8 @@ import { execSync } from "node:child_process"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { db, sql } from "@better-t-stack-template/db"
+import { createMiddleware } from "hono/factory"
 import { testClient } from "hono/testing"
 import {
   describe,
@@ -11,12 +13,14 @@ import {
   expect,
 } from "vitest"
 
-import { createMiddleware } from "hono/factory"
-import { createRouter, createTestApp } from "~/lib/create-app"
+import {
+  createRouter,
+  createTestApp,
+} from "~/lib/create-app"
 import type { AppBindings } from "~/lib/type"
-import { db, sql } from "@better-t-stack-template/db"
-import * as routes from "./authz.routes"
+
 import * as handlers from "./authz.handler"
+import * as routes from "./authz.routes"
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -34,45 +38,66 @@ function createAuthzTestRouter() {
   router.use(
     "*",
     createMiddleware<AppBindings>(async (c, next) => {
-      c.set("user", { sub: "00000000-0000-0000-0000-000000000001" })
+      c.set("user", {
+        sub: "00000000-0000-0000-0000-000000000001",
+      })
       return next()
     }),
   )
 
-  router
+  return router
     .openapi(routes.listRoles, handlers.listRoles)
     .openapi(routes.createRole, handlers.createRole)
     .openapi(routes.getRole, handlers.getRole)
     .openapi(routes.updateRole, handlers.updateRole)
     .openapi(routes.deleteRole, handlers.deleteRole)
-    .openapi(routes.listRolePermissions, handlers.listRolePermissions)
-    .openapi(routes.addRolePermission, handlers.addRolePermission)
-    .openapi(routes.removeRolePermission, handlers.removeRolePermission)
-
-  return router
+    .openapi(
+      routes.listRolePermissions,
+      handlers.listRolePermissions,
+    )
+    .openapi(
+      routes.addRolePermission,
+      handlers.addRolePermission,
+    )
+    .openapi(
+      routes.removeRolePermission,
+      handlers.removeRolePermission,
+    )
 }
 
-const client = testClient(createTestApp(createAuthzTestRouter()))
+const client = testClient(
+  createTestApp(createAuthzTestRouter()),
+)
+
+function expectData<T>(body: { data: T | null }): T {
+  expect(body.data).not.toBeNull()
+  return body.data as T
+}
 
 let createdRoleId: string | null = null
 
 describe("authz routes", () => {
-
   beforeAll(async () => {
     execSync("bun db:push", {
       cwd: root,
       env: {
         ...process.env,
-        DOTENV_CONFIG_PATH: path.resolve(root, "apps/server/.env.test"),
+        DOTENV_CONFIG_PATH: path.resolve(
+          root,
+          "apps/server/.env.test",
+        ),
       },
     })
     // 清理上次测试运行残留数据
-    await db.execute(sql`TRUNCATE TABLE user_roles, role_permissions, roles CASCADE`)
-
+    await db.execute(
+      sql`TRUNCATE TABLE user_roles, role_permissions, roles CASCADE`,
+    )
   })
 
   afterAll(async () => {
-    await db.execute(sql`TRUNCATE TABLE user_roles, role_permissions, roles CASCADE`)
+    await db.execute(
+      sql`TRUNCATE TABLE user_roles, role_permissions, roles CASCADE`,
+    )
   })
   /* ======== 角色 CRUD ======== */
 
@@ -83,28 +108,32 @@ describe("authz routes", () => {
     expect(res.status).toBe(201)
     const body = await res.json()
     expect(body.ret).toBe(0)
-    expect(body.data).toHaveProperty("id")
-    expect(body.data.name).toBe("tester")
-    createdRoleId = body.data.id as string
+    const data = expectData(body)
+    expect(data).toHaveProperty("id")
+    expect(data.name).toBe("tester")
+    createdRoleId = data.id
   })
 
-  it("POST /api/v1/roles — 重复创建幂等返回 201", async () => {
+  it("POST /api/v1/roles — 重复名称返回 409", async () => {
     const res = await client.roles.$post({
       json: { name: "tester", description: "测试角色" },
     })
-    expect(res.status).toBe(201)
+    expect(res.status).toBe(409)
     const body = await res.json()
-    expect(body.ret).toBe(0)
-    expect(body.data.name).toBe("tester")
+    expect(body.ret).toBe(-1)
+    expect(body.msg).toBeTruthy()
   })
 
   it("GET /api/v1/roles — 列出角色", async () => {
-    const res = await client.roles.$get()
+    const res = await client.roles.$get({
+      query: { page: "1", pageSize: "10" },
+    })
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.ret).toBe(0)
-    expect(Array.isArray(body.data)).toBe(true)
-    expect(body.data.length).toBeGreaterThanOrEqual(1)
+    const data = expectData(body)
+    expect(Array.isArray(data.items)).toBe(true)
+    expect(data.items.length).toBeGreaterThanOrEqual(1)
   })
 
   it("GET /api/v1/roles/{id} — 获取单个角色", async () => {
@@ -115,7 +144,7 @@ describe("authz routes", () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.ret).toBe(0)
-    expect(body.data.name).toBe("tester")
+    expect(expectData(body).name).toBe("tester")
   })
 
   it("PATCH /api/v1/roles/{id} — 更新角色", async () => {
@@ -127,14 +156,14 @@ describe("authz routes", () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.ret).toBe(0)
-    expect(body.data.description).toBe("已更新")
+    expect(expectData(body).description).toBe("已更新")
   })
 
   it("DELETE /api/v1/roles/{id} — 删除角色", async () => {
     const createRes = await client.roles.$post({
       json: { name: "to-delete", description: "待删除" },
     })
-    const deleteId = (await createRes.json()).data.id as string
+    const deleteId = expectData(await createRes.json()).id
 
     const res = await client.roles[":id"].$delete({
       param: { id: deleteId },
@@ -146,7 +175,9 @@ describe("authz routes", () => {
 
   it("GET /api/v1/roles/{roleId}/permissions — 空列表", async () => {
     if (!createdRoleId) throw new Error("前置：角色未创建")
-    const res = await client.roles[":roleId"].permissions.$get({
+    const res = await client.roles[
+      ":roleId"
+    ].permissions.$get({
       param: { roleId: createdRoleId },
     })
     expect(res.status).toBe(200)
@@ -157,45 +188,60 @@ describe("authz routes", () => {
 
   it("POST /api/v1/roles/{roleId}/permissions — 添加权限", async () => {
     if (!createdRoleId) throw new Error("前置：角色未创建")
-    const res = await client.roles[":roleId"].permissions.$post({
+    const res = await client.roles[
+      ":roleId"
+    ].permissions.$post({
       param: { roleId: createdRoleId },
       json: { permission: "tasks:read" },
     })
     expect(res.status).toBe(201)
     const body = await res.json()
     expect(body.ret).toBe(0)
-    expect(body.data.permission).toBe("tasks:read")
+    expect(expectData(body).permission).toBe("tasks:read")
   })
 
-  it("POST /api/v1/roles/{roleId}/permissions — 重复添加幂等返回 201", async () => {
+  it("POST /api/v1/roles/{roleId}/permissions — 重复添加返回 409", async () => {
     if (!createdRoleId) throw new Error("前置：角色未创建")
-    const res = await client.roles[":roleId"].permissions.$post({
+    const res = await client.roles[
+      ":roleId"
+    ].permissions.$post({
       param: { roleId: createdRoleId },
       json: { permission: "tasks:read" },
     })
-    expect(res.status).toBe(201)
+    expect(res.status).toBe(409)
+    const body = await res.json()
+    expect(body.ret).toBe(-1)
+    expect(body.msg).toBeTruthy()
   })
 
   it("GET /api/v1/roles/{roleId}/permissions — 含已添加权限", async () => {
     if (!createdRoleId) throw new Error("前置：角色未创建")
-    const res = await client.roles[":roleId"].permissions.$get({
+    const res = await client.roles[
+      ":roleId"
+    ].permissions.$get({
       param: { roleId: createdRoleId },
     })
     expect(res.status).toBe(200)
     const body = await res.json()
-    const items = body.data as { permission: string }[]
+    expect(body.ret).toBe(0)
+    const items = expectData(body)
+    expect(
+      items.some((item) => item.permission === "tasks:read"),
+    ).toBe(true)
   })
 
   it("DELETE /api/v1/roles/{roleId}/permissions/{permission} — 移除权限", async () => {
     if (!createdRoleId) throw new Error("前置：角色未创建")
-    const res = await client.roles[":roleId"].permissions[":permission"].$delete(
-      {
-        param: { roleId: createdRoleId, permission: "tasks:read" },
+    const res = await client.roles[":roleId"].permissions[
+      ":permission"
+    ].$delete({
+      param: {
+        roleId: createdRoleId,
+        permission: "tasks:read",
       },
-    )
+    })
     expect(res.status).toBe(204)
   })
-
 
   /* ======== Zod 校验 ======== */
 
@@ -208,7 +254,9 @@ describe("authz routes", () => {
   })
 
   it("POST /api/v1/roles/{roleId}/permissions — 校验 permission 格式", async () => {
-    const res = await client.roles[":roleId"].permissions.$post({
+    const res = await client.roles[
+      ":roleId"
+    ].permissions.$post({
       param: { roleId: crypto.randomUUID() },
       json: { permission: "invalid" },
     })

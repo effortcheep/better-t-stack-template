@@ -174,7 +174,7 @@ function outFiles(ctx: Ctx): OutFile[] {
       relPath: `packages/db/src/schema/${name}.ts`,
       template: "db/schema.ts.ejs",
     },
-    // ===== 后端 (4) =====
+    // ===== 后端 (5) =====
     {
       relPath: `apps/server/src/routes/${name}/${name}.handler.ts`,
       template: "server/handler.ts.ejs",
@@ -190,6 +190,10 @@ function outFiles(ctx: Ctx): OutFile[] {
     {
       relPath: `apps/server/src/routes/${name}/${name}.test.ts`,
       template: "server/test.ts.ejs",
+    },
+    {
+      relPath: `apps/server/src/routes/${name}/permission.json`,
+      template: "server/permission.json.ejs",
     },
     // ===== 前端 feature (8) =====
     {
@@ -326,9 +330,7 @@ function main(): void {
   console.log(`     export * from "./${ctx.name}"`)
   console.log(`2. [必须] 同步数据库：bun db:push`)
   console.log(`3. [可选] 在 apps/server/src/index.ts 注册新路由模块（仿 tasks）`)
-  console.log(
-    `4. [可选] 在 apps/server/src/lib/permissions.ts 加 ${ctx.name}:read/create/update/delete 权限码`,
-  )
+  console.log(`4. [可选] 按需调整 apps/server/src/routes/${ctx.name}/permission.json`)
   console.log(
     `5. [可选] 在 apps/web/src/components/app-sidebar.tsx import nav 并加进 navMain`,
   )
