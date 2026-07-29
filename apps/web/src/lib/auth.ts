@@ -3,6 +3,12 @@ import { env } from "@better-t-stack-template/env/web"
 const SERVER_URL = env.VITE_SERVER_URL
 const TOKEN_KEY = "bearer_token"
 
+/**
+ * Token 存 localStorage（#55）。
+ * XSS 可窃取；模板为 Bearer SPA，不使用 httpOnly cookie。
+ * 生产建议：短 TTL + 刷新令牌，或 BFF Cookie 方案。
+ */
+
 export function getToken(): string | null {
   if (typeof localStorage === "undefined") return null
   return localStorage.getItem(TOKEN_KEY)

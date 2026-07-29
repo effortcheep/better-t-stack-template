@@ -2,10 +2,12 @@
 
 import { env } from "@better-t-stack-template/env/web"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "@tanstack/react-router"
 import { toast } from "sonner"
 import { z } from "zod"
 
 import { getToken } from "@/lib/auth"
+import { usePermissions } from "@/stores/permissions"
 import type {
   RoleCreateInput,
   RoleRecord,
@@ -198,6 +200,7 @@ export function useRolePermissions(roleId: string) {
 
 export function useAddRolePermission() {
   const qc = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async ({
@@ -217,8 +220,10 @@ export function useAddRolePermission() {
       const parsed = envelopeSchema(rolePermissionSchema).parse(json)
       return parsed.data
     },
-    onSuccess: (_data, vars) => {
+    onSuccess: async (_data, vars) => {
       qc.invalidateQueries({ queryKey: ["roles", vars.roleId, "permissions"] })
+      await usePermissions.getState().refresh()
+      await router.invalidate()
       toast.success("权限已添加")
     },
     onError: (err) => {
@@ -229,6 +234,7 @@ export function useAddRolePermission() {
 
 export function useRemoveRolePermission() {
   const qc = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async ({
@@ -249,8 +255,10 @@ export function useRemoveRolePermission() {
       const json = await res.json().catch(() => ({}))
       throw new Error((json as { msg?: string }).msg || "移除权限失败")
     },
-    onSuccess: (_data, vars) => {
+    onSuccess: async (_data, vars) => {
       qc.invalidateQueries({ queryKey: ["roles", vars.roleId, "permissions"] })
+      await usePermissions.getState().refresh()
+      await router.invalidate()
       toast.success("权限已移除")
     },
     onError: (err) => {

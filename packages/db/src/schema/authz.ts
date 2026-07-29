@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm"
 import { createSelectSchema } from "drizzle-zod"
-import { pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, uniqueIndex, index } from "drizzle-orm/pg-core"
 
 import { user } from "./auth"
 
@@ -24,6 +24,7 @@ export const rolePermissions = pgTable(
   },
   (table) => [
     uniqueIndex("rp_role_permission_idx").on(table.roleId, table.permission),
+    index("rp_role_id_idx").on(table.roleId),
   ],
 )
 
@@ -41,6 +42,8 @@ export const userRoles = pgTable(
   },
   (table) => [
     uniqueIndex("ur_user_role_idx").on(table.userId, table.roleId),
+    index("ur_user_id_idx").on(table.userId),
+    index("ur_role_id_idx").on(table.roleId),
   ],
 )
 

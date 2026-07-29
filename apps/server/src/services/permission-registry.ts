@@ -64,4 +64,17 @@ export async function initPermissionRegistry(): Promise<void> {
   }
 
   registry = modules
+
+  const seen = new Map<string, string>()
+  for (const mod of modules) {
+    for (const p of mod.permissions) {
+      const prev = seen.get(p.code)
+      if (prev) {
+        throw new Error(
+          `重复权限码 ${p.code}（${prev} 与 ${mod.module}）`,
+        )
+      }
+      seen.set(p.code, mod.module)
+    }
+  }
 }

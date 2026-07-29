@@ -1,16 +1,23 @@
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+
 import dotenv from "dotenv"
 import { defineConfig } from "drizzle-kit"
 
-/** 支持的 env 文件路径。默认指向 apps/server/.env。
- *  CLI 可通过 DOTENV_CONFIG_PATH 覆盖（相对路径基于 CWD，建议传绝对路径）。 */
-const envPath = process.env.DOTENV_CONFIG_PATH ?? "../../apps/server/.env"
-dotenv.config({ path: envPath })
+/** 默认 apps/server/.env；CLI 可通过 DOTENV_CONFIG_PATH 覆盖 (#7) */
+const root = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../..",
+)
+dotenv.config({
+  path: process.env.DOTENV_CONFIG_PATH ?? path.join(root, "apps/server/.env"),
+})
 
 export default defineConfig({
   schema: "./src/schema",
   out: "./src/migrations",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL || "",
+    url: process.env.DATABASE_URL ?? "",
   },
 })

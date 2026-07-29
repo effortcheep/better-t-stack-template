@@ -12,7 +12,9 @@ interface PermissionsState {
   /** 是否已从服务端加载 */
   isLoaded: boolean
   /** 从服务端获取权限 */
-  fetch: () => Promise<void>
+  fetch: (force?: boolean) => Promise<void>
+  /** 强制刷新权限并标记已加载 */
+  refresh: () => Promise<void>
   /** 确保权限已加载，避免路由守卫在首屏放行 */
   ensureLoaded: () => Promise<void>
   /** 检查是否持有目标权限（含通配 *:* 展开） */
@@ -25,14 +27,15 @@ let inFlightPermissionsFetch: Promise<void> | null = null
 
 export const usePermissions = create<PermissionsState>(
   (set, get) => {
-    const loadPermissions = async () => {
-      if (get().isLoaded) return
+    const loadPermissions = async (force = false) => {
+      if (!force && get().isLoaded) return
       if (inFlightPermissionsFetch) {
         await inFlightPermissionsFetch
-        return
+        if (!force) return
       }
 
       inFlightPermissionsFetch = (async () => {
+        if (force) set({ isLoaded: false })
         const token = getToken()
         if (!token) {
           set({ permissions: new Set(), isLoaded: true })
@@ -71,8 +74,9 @@ export const usePermissions = create<PermissionsState>(
       permissions: new Set(),
       isLoaded: false,
 
-      fetch: loadPermissions,
-      ensureLoaded: loadPermissions,
+      fetch: (force?: boolean) => loadPermissions(force ?? false),
+      ensureLoaded: () => loadPermissions(false),
+      refresh: () => loadPermissions(true),
 
       has: (perm: string) => {
         const { permissions } = get()

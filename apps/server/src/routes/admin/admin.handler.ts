@@ -124,15 +124,11 @@ export const createUser: AppRouteHandler<
         .catch(() => ({ message: "" }))) as {
         message?: string
       }
-      return c.json(
-        {
-          ret: -1,
-          msg:
-            errData.message ||
-            "创建失败，邮箱或用户名可能已被使用",
-          data: null,
-        },
-        HttpStatusCodes.OK,
+      return err(
+        c,
+        errData.message ||
+          "创建失败，邮箱或用户名可能已被使用",
+        HttpStatusCodes.CONFLICT,
       )
     }
 
@@ -142,10 +138,7 @@ export const createUser: AppRouteHandler<
     }
     const userId = signUpData?.user?.id
     if (!userId) {
-      return c.json(
-        { ret: -1, msg: "创建成功但无法获取用户 ID", data: null },
-        HttpStatusCodes.OK,
-      )
+      return err(c, "创建成功但无法获取用户 ID", HttpStatusCodes.INTERNAL_SERVER_ERROR)
     }
 
     // 查询完整用户信息
@@ -155,10 +148,7 @@ export const createUser: AppRouteHandler<
       .where(eq(user.id, userId))
 
     if (!u) {
-      return c.json(
-        { ret: -1, msg: "用户创建后无法查询", data: null },
-        HttpStatusCodes.OK,
-      )
+      return err(c, "用户创建后无法查询", HttpStatusCodes.INTERNAL_SERVER_ERROR)
     }
 
     return created(c, {
@@ -173,16 +163,10 @@ export const createUser: AppRouteHandler<
     })
   } catch (err_) {
     if (err_ instanceof APIError) {
-      return c.json(
-        { ret: -1, msg: err_.message, data: null },
-        HttpStatusCodes.OK,
-      )
+      return err(c, err_.message, HttpStatusCodes.CONFLICT)
     }
     c.var.logger.error(err_, "创建用户失败")
-    return c.json(
-      { ret: -1, msg: "服务器内部错误", data: null },
-      HttpStatusCodes.OK,
-    )
+    return err(c, "服务器内部错误", HttpStatusCodes.INTERNAL_SERVER_ERROR)
   }
 }
 
@@ -195,10 +179,7 @@ export const getUser: AppRouteHandler<GetUserRoute> = async (c) => {
 
   const [u] = await db.select().from(user).where(eq(user.id, id))
   if (!u) {
-    return c.json(
-      { ret: -1, msg: "用户不存在", data: null },
-      HttpStatusCodes.OK,
-    )
+    return err(c, "用户不存在", HttpStatusCodes.NOT_FOUND)
   }
 
   // 查询角色（含完整角色信息）
@@ -243,10 +224,7 @@ export const changePassword: AppRouteHandler<
   // 验证用户存在
   const [u] = await db.select().from(user).where(eq(user.id, id))
   if (!u) {
-    return c.json(
-      { ret: -1, msg: "用户不存在", data: null },
-      HttpStatusCodes.OK,
-    )
+    return err(c, "用户不存在", HttpStatusCodes.NOT_FOUND)
   }
 
   // 查找 credential 账号

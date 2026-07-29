@@ -32,7 +32,7 @@
     "lint": "vp lint",
     "format": "vp fmt",
     "staged": "vp staged",
-    "hooks:setup": "vp config",
+    "hooks:setup": "vp config && bunx lefthook install",
     "dev:web": "vp run --filter web dev",
     "dev:server": "vp run --filter server dev",
     "db:push": "vp run --filter @better-t-stack-template/db db:push",
@@ -43,7 +43,9 @@
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
-    "gen:crud": "bun run scripts/gen-crud.ts"
+    "gen:crud": "bun run scripts/gen-crud.ts",
+    "check:permissions": "bun run scripts/check-permissions-sync.ts",
+    "check:circular": "dpdm --no-warning --no-tree apps/server/src/index.ts apps/web/src/main.tsx"
   },
   "dependencies": {
     "@better-t-stack-template/env": "workspace:*",
@@ -53,6 +55,7 @@
   "devDependencies": {
     "@better-t-stack-template/config": "workspace:*",
     "@types/bun": "catalog:",
+    "dpdm": "3.14.0",
     "ejs": "^6.0.1",
     "eslint-plugin-perfectionist": "^5.10.0",
     "oxfmt": "^0.53.0",

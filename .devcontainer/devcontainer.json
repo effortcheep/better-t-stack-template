@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/devcontainer.json",
+  "name": "better-t-stack-template",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "server",
+  "workspaceFolder": "/app",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  },
+  "postCreateCommand": "bun install && bun run hooks:setup",
+  "forwardPorts": [3000, 3001, 5432, 6379]
+}

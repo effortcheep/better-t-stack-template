@@ -1,5 +1,7 @@
 {
   "name": "@better-t-stack-template/db",
+  "version": "0.0.0",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -13,7 +15,9 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:check": "drizzle-kit check",
+    "check-types": "tsc -b"
   },
   "dependencies": {
     "@better-t-stack-template/env": "workspace:*",

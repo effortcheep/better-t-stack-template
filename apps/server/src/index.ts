@@ -21,9 +21,14 @@ configureOpenAPI(app)
 app.use(
   "/*",
   cors({
-    origin: env.CORS_ORIGIN,
+    origin: (origin) => {
+      if (!origin) return env.CORS_ORIGIN
+      if (origin === env.CORS_ORIGIN) return origin
+      if (env.NODE_ENV !== "production") return origin
+      return env.CORS_ORIGIN
+    },
     allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Request-Id"],
     credentials: true,
   }),
 )

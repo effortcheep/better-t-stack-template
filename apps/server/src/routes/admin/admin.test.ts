@@ -157,7 +157,7 @@ describe("admin routes", () => {
       },
     })
     const body2 = (await res2.json()) as ApiEnvelope<null>
-    expect(res2.status).toBe(200)
+    expect(res2.status).toBe(409)
     expect(body2.ret).toBe(-1)
     expect(body2.msg).toBeTruthy()
     expect(body2.data).toBeNull()
@@ -245,7 +245,7 @@ describe("admin routes", () => {
     const res = await client.users[":id"].$get({
       param: { id: crypto.randomUUID() },
     })
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(404)
     const body = await res.json()
     expect(body.ret).toBe(-1)
     expect(body.msg).toBe("用户不存在")

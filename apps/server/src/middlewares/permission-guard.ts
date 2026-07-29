@@ -68,6 +68,15 @@ export function createPermissionGuard(
 
     const permissions = await getUserPermissions(userId)
     if (!satisfies(new Set(permissions), rule.permission)) {
+      c.var.logger?.warn(
+        {
+          userId,
+          path,
+          method,
+          required: rule.permission,
+        },
+        "权限拒绝",
+      )
       return c.json(
         { ret: -1, msg: "权限不足", data: null },
         HttpStatusCodes.FORBIDDEN,

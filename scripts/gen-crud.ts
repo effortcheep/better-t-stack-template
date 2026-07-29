@@ -13,6 +13,7 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { execSync } from "node:child_process"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -20,7 +21,7 @@ import ejs from "ejs"
 
 // ========== 类型 ==========
 
-type FieldType = "text" | "boolean" | "number" | "date"
+type FieldType = "text" | "boolean" | "number" | "date" | "email" | "select"
 
 interface FieldDef {
   name: string
@@ -88,7 +89,14 @@ function parseArgs(argv: string[]): Args {
 
 // ========== 字段解析 ==========
 
-const FIELD_TYPES = new Set<FieldType>(["text", "boolean", "number", "date"])
+const FIELD_TYPES = new Set<FieldType>([
+  "text",
+  "boolean",
+  "number",
+  "date",
+  "email",
+  "select",
+])
 
 function parseFields(raw: string): FieldDef[] {
   const fields: FieldDef[] = []
@@ -324,6 +332,14 @@ function main(): void {
   }
 
   console.log()
+
+  // 生成后自动格式化 (#45)
+  try {
+    execSync("bun run format", { cwd: root, stdio: "inherit" })
+  } catch {
+    console.warn("⚠ 自动格式化失败，请手动运行 bun run format")
+  }
+
   console.log("已完成。请手动处理以下 TODO：")
   console.log()
   console.log(`1. [必须] 在 packages/db/src/schema/index.ts 追加：`)

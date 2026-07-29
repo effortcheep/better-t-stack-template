@@ -109,7 +109,11 @@ export const createUser = createRoute({
   tags,
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(z.unknown(), "已创建的用户"),
-    [HttpStatusCodes.OK]: jsonContent(z.unknown(), "业务错误"),
+    [HttpStatusCodes.CONFLICT]: jsonContent(z.null(), "邮箱或用户名已存在"),
+    [HttpStatusCodes.INTERNAL_SERVER_ERROR]: jsonContent(
+      z.null(),
+      "服务器错误",
+    ),
   },
 })
 export type CreateUserRoute = typeof createUser
@@ -121,6 +125,7 @@ export const getUser = createRoute({
   tags,
   responses: {
     [HttpStatusCodes.OK]: jsonContent(z.unknown(), "用户详情"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(z.null(), "用户不存在"),
   },
 })
 export type GetUserRoute = typeof getUser
@@ -136,6 +141,7 @@ export const changePassword = createRoute({
   tags,
   responses: {
     [HttpStatusCodes.OK]: jsonContent(z.unknown(), "修改结果"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(z.null(), "用户不存在"),
   },
 })
 export type ChangePasswordRoute = typeof changePassword

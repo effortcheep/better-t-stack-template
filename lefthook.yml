@@ -1,0 +1,11 @@
+pre-commit:
+  commands:
+    staged:
+      run: bun run staged
+      glob: "*.{ts,tsx,js,jsx,json,md}"
+      stage_fixed: true
+
+pre-push:
+  commands:
+    check:
+      run: bun run check-types && bun run test

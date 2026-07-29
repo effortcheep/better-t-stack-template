@@ -14,13 +14,13 @@
 2. 作为系统管理员，我可以将用户关联到一个或多个角色，该用户获得所有角色的并集权限
 3. 作为已登录用户，我的权限列表缓存在 Redis 中，API 调用不需要每次查库
 4. 作为管理员，我修改角色权限后，关联用户的缓存即刻失效，下次请求生效
-5. 作为前端开发者，我可以在每个 feature 目录下的 `route-config.ts` 中声明路由所需的权限
+5. 作为前端开发者，我可以在每个路由的 `beforeLoad` 中调用 `requirePermission(...)` 声明所需权限
 6. 作为普通用户，我登录后只能看到自己有权访问的路由和侧边栏菜单项
-7. 作为普通用户，访问无权限的路由时会看到 403 禁止页面
+7. 作为普通用户，访问无权限的路由时会看到统一错误页（`AppError(403)` → `ErrorPage`）
 8. 作为前端开发者，我可以用 `<Can permission="tasks:create">` 包裹任意组件，无权限时自动隐藏
-9. 作为后端开发者，我可以在注册路由时加 `requirePermission("tasks:read")` 中间件保护 API
-10. 作为后端开发者，我可以定义任意 `resource:action` 格式的权限码，统一维护在常量文件中
-11. 作为已登录用户，前端调用 `GET /api/me/permissions` 获取我的权限列表并存入 Zustand store
+9. 作为后端开发者，我可以在 `*.index.ts` 上挂载 `createPermissionGuard(rules)` 保护 API
+10. 作为后端开发者，我可以在各模块 `permission.json` 中定义 `resource:action` 权限码
+11. 作为已登录用户，前端调用 `GET /api/v1/me/permissions` 获取我的权限列表并存入 Zustand store
 12. 作为开发者，系统预置 `admin` 角色（通配 `*:*`），开箱即可用权限系统
 
 ## Implementation Decisions
@@ -28,16 +28,17 @@
 - **权限模型**：RBAC，权限码格式 `resource:action`（如 `tasks:read`）。权限码为代码常量（不存数据库），角色通过 `role_permissions` 表持有权限码列表
 - **角色模型**：扁平角色，无继承层级。用户可拥有多个角色，有效权限 = 所有角色权限的并集
 - **通配**：`*:*` 匹配所有权限，仅预置 `admin` 角色持有
-- **权限校验流程**：登录 → `GET /api/me/permissions` → Redis 查角色权限 → 返回权限数组 → 前端存 Zustand
-- **缓存策略**：Redis key `permissions:<userId>`，长驻。修改角色时主动删除受影响用户的缓存条目
-- **后端中间件**：`requirePermission(...perms: string[])`，Hono middleware，OR 逻辑（任意一个满足即放行），无权限返回信封 403
-- **前端路由**：每个 feature 自描述路由配置（`route-config.ts`），`_authenticated` 收集所有配置、按用户权限过滤后动态注册 TanStack Router。侧边栏由同一份配置渲染
+- **权限校验流程**：登录 → `GET /api/v1/me/permissions` → Redis 查角色权限 → 返回权限数组 → 前端存 Zustand
+- **缓存策略**：Redis key `permissions:<userId>`（JSON 数组），长驻。修改角色时主动删除受影响用户的缓存。Redis 不可用时回源 DB（#39）。并发加载走 Singleflight（#44）
+- **后端中间件**：`createPermissionGuard(rules)` 声明式 path+method 规则表；另保留 `requirePermission(...perms)` OR 中间件。无权限返回信封 403，并写结构化日志（#42）
+- **前端路由**：per-route `beforeLoad` + `requirePermission`（**不**使用动态 `route-config.ts` — #19 wontfix）。侧边栏由各 feature `nav.tsx` 手动聚合到 `app-sidebar.tsx`
 - **前端组件权限**：`<Can permission="...">` 声明式包裹组件，从 Zustand store 读权限判断显隐
-- **403 页面**：路由级无权限渲染 `/_authenticated/403` 页面；按钮级直接隐藏不显示
+- **403 页面**：**不**创建专用 `/403` 路由（#20 wontfix）。路由级无权限抛 `AppError(403)`，由 `__root` `ErrorPage` 渲染
 - **种子数据**：仅预置 `admin` 角色（`*:*`）。不预置 member 等业务角色
 - **本人资源模式**：不内置。由具体项目按需扩展 ABAC 层
 - **作用域角色**：暂不引入（`user_roles` 无 scope 字段）。需要时加列 + 改缓存 key，各层可改但不难
-- **管理界面**：第一版仅提供后端 API（roles/user_roles CRUD），不提供管理 UI
+- **管理界面**：提供后端 API + Admin 前端（用户/角色/权限）
+- **权限变更后**：admin 分配/撤销角色或改权限后调用 `usePermissions.refresh()` + `router.invalidate()`（#48）
 - **Redis 客户端**：新引入 `ioredis` 依赖
 - **数据库表**：新增 `roles`、`role_permissions`、`user_roles` 三张表
 

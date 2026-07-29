@@ -6,6 +6,8 @@ import { toast } from "sonner"
 import { z } from "zod"
 
 import { getToken } from "@/lib/auth"
+import { usePermissions } from "@/stores/permissions"
+import { useRouter } from "@tanstack/react-router"
 import type {
   AssignRoleBody,
   ChangePasswordBody,
@@ -139,6 +141,7 @@ export function useChangePassword(userId: string) {
 
 export function useAssignRole() {
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async ({
@@ -160,11 +163,13 @@ export function useAssignRole() {
       if (json.ret !== 0) throw new Error(json.msg || "分配角色失败")
       return roleSchema.parse(json.data)
     },
-    onSuccess: (_data, vars) => {
+    onSuccess: async (_data, vars) => {
       queryClient.invalidateQueries({
         queryKey: ["admin-users", vars.userId],
       })
       queryClient.invalidateQueries({ queryKey: ["admin-users"] })
+      await usePermissions.getState().refresh()
+      await router.invalidate()
       toast.success("角色分配成功")
     },
     onError: (err) => {
@@ -175,6 +180,7 @@ export function useAssignRole() {
 
 export function useUnassignRole() {
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async ({
@@ -196,11 +202,13 @@ export function useUnassignRole() {
         throw new Error((json as { msg?: string }).msg || "撤销角色失败")
       }
     },
-    onSuccess: (_data, vars) => {
+    onSuccess: async (_data, vars) => {
       queryClient.invalidateQueries({
         queryKey: ["admin-users", vars.userId],
       })
       queryClient.invalidateQueries({ queryKey: ["admin-users"] })
+      await usePermissions.getState().refresh()
+      await router.invalidate()
       toast.success("角色已撤销")
     },
     onError: (err) => {

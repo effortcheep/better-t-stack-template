@@ -1,5 +1,7 @@
 {
   "name": "@better-t-stack-template/auth",
+  "version": "0.0.0",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -9,7 +11,9 @@
       "default": "./src/*.ts"
     }
   },
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc -b"
+  },
   "dependencies": {
     "@better-t-stack-template/db": "workspace:*",
     "@better-t-stack-template/env": "workspace:*",

@@ -20,7 +20,7 @@ function testApp(rules: ReturnType<typeof crudPermissionRules>) {
   })
   app.use("*", createPermissionGuard(rules))
   app.get("/api/v1/tasks", (c) => c.json({ ok: true }))
-  app.post("/api/v1/tasks", (c) => c.json({ ok: true }))
+  app.post("/api/v1/tasks", (c) => c.json({ ok: true }, 201))
   return app
 }
 
@@ -49,7 +49,7 @@ describe("createPermissionGuard", () => {
     mockGetUserPermissions.mockResolvedValue(["*:*"])
     const app = testApp(crudPermissionRules("tasks", "tasks"))
     const res = await app.request("/api/v1/tasks", { method: "POST" })
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(201)
   })
 
   it("仅有 read 时 POST 返回 403", async () => {

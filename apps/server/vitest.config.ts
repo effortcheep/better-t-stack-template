@@ -10,5 +10,7 @@ export default defineConfig({
   },
   test: {
     exclude: ["dist/**", "node_modules/**"],
+    pool: "forks",
+    fileParallelism: false,
   },
 })
