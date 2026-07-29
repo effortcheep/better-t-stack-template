@@ -69,6 +69,10 @@ export const createRole = createRoute({
       selectRoleSchema,
       "已创建的角色",
     ),
+    [HttpStatusCodes.CONFLICT]: jsonContent(
+      z.null(),
+      "角色名称已存在",
+    ),
   },
 })
 
@@ -114,6 +118,10 @@ export const deleteRole = createRoute({
     [HttpStatusCodes.NO_CONTENT]: {
       description: "已删除",
     },
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      z.null(),
+      "角色不存在",
+    ),
   },
 })
 
@@ -152,6 +160,10 @@ export const addRolePermission = createRoute({
       selectRolePermissionSchema,
       "已添加的权限",
     ),
+    [HttpStatusCodes.CONFLICT]: jsonContent(
+      z.null(),
+      "权限已存在",
+    ),
   },
 })
 
@@ -166,6 +178,10 @@ export const removeRolePermission = createRoute({
     [HttpStatusCodes.NO_CONTENT]: {
       description: "已移除",
     },
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      z.null(),
+      "权限项不存在",
+    ),
   },
 })
 

@@ -5,6 +5,7 @@ import {
 } from "@better-t-stack-template/db/schema/tasks"
 import { createRoute } from "@hono/zod-openapi"
 import * as HttpStatusCodes from "stoker/http-status-codes"
+import { z } from "zod"
 import {
   createErrorSchema,
   IdParamsSchema,
@@ -69,6 +70,10 @@ export const getOne = createRoute({
       selectTasksSchema,
       "The requested task",
     ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      z.null(),
+      "Task not found",
+    ),
   },
 })
 
@@ -88,6 +93,10 @@ export const update = createRoute({
       selectTasksSchema,
       "The updated task",
     ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      z.null(),
+      "Task not found",
+    ),
   },
 })
 
@@ -102,6 +111,10 @@ export const remove = createRoute({
     [HttpStatusCodes.NO_CONTENT]: {
       description: "Task deleted",
     },
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      z.null(),
+      "Task not found",
+    ),
   },
 })
 

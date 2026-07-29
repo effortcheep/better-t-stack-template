@@ -2,8 +2,6 @@ import "dotenv/config"
 import { createEnv } from "@t3-oss/env-core"
 import { z } from "zod"
 
-console.log(process.env.DATABASE_URL)
-
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string().min(1),

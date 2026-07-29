@@ -7,6 +7,17 @@ export function pinoLogger() {
     pino: pino(
       {
         level: "info",
+        redact: {
+          paths: [
+            "req.headers.authorization",
+            "req.headers.cookie",
+            "password",
+            "confirmPassword",
+            "*.password",
+            "*.confirmPassword",
+          ],
+          remove: true,
+        },
       },
       pretty(),
     ),

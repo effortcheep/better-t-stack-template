@@ -9,7 +9,7 @@ import { tasks } from "@better-t-stack-template/db/schema/tasks"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 import * as HttpStatusPhrases from "stoker/http-status-phrases"
 
-import { err, noContent, ok } from "~/lib/response-helpers"
+import { noContent, ok, err } from "~/lib/response-helpers"
 import type { AppRouteHandler } from "~/lib/type"
 
 import type {
@@ -25,8 +25,6 @@ export const list: AppRouteHandler<ListRoute> = async (
 ) => {
   const { page, pageSize, sort, order } =
     c.req.valid("query")
-
-  console.log("user", c.var.user)
 
   const orderFn = order === "asc" ? drizzleAsc : drizzleDesc
 
@@ -68,7 +66,10 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (
   const task = await db.query.tasks.findFirst({
     where: (fields, { eq }) => eq(fields.id, id),
   })
-  return ok(c, task ?? null)
+  if (!task) {
+    return err(c, HttpStatusPhrases.NOT_FOUND, HttpStatusCodes.NOT_FOUND)
+  }
+  return ok(c, task)
 }
 
 export const update: AppRouteHandler<UpdateRoute> = async (
@@ -82,7 +83,10 @@ export const update: AppRouteHandler<UpdateRoute> = async (
     .set(updates)
     .where(eq(tasks.id, id))
     .returning()
-  return ok(c, task ?? null)
+  if (!task) {
+    return err(c, HttpStatusPhrases.NOT_FOUND, HttpStatusCodes.NOT_FOUND)
+  }
+  return ok(c, task)
 }
 
 export const remove: AppRouteHandler<RemoveRoute> = async (
@@ -94,11 +98,7 @@ export const remove: AppRouteHandler<RemoveRoute> = async (
     .delete(tasks)
     .where(eq(tasks.id, id))
   if (result.rowCount === 0) {
-    return err(
-      c,
-      HttpStatusPhrases.NOT_FOUND,
-      HttpStatusCodes.NOT_FOUND,
-    )
+    return err(c, HttpStatusPhrases.NOT_FOUND, HttpStatusCodes.NOT_FOUND)
   }
 
   return noContent(c)

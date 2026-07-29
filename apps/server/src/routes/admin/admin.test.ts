@@ -11,11 +11,19 @@ import {
   afterAll,
   it,
   expect,
+  vi,
 } from "vitest"
 
-import { createTestApp } from "~/lib/create-app"
+import { createAuthTestApp } from "~/test-helpers/create-auth-test-app"
 
 import adminRouter from "./admin.index"
+
+vi.mock("~/services/permission-cache", () => ({
+  getUserPermissions: vi.fn().mockResolvedValue(["*:*"]),
+  clearUserPermissions: vi.fn().mockResolvedValue(undefined),
+  clearRolePermissions: vi.fn().mockResolvedValue(undefined),
+  clearRolePermissionsBulk: vi.fn().mockResolvedValue(undefined),
+}))
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -26,7 +34,7 @@ if (process.env.NODE_ENV !== "test") {
   throw new Error("NODE_ENV must be 'test'")
 }
 
-const client = testClient(createTestApp(adminRouter))
+const client = testClient(createAuthTestApp(adminRouter))
 
 type ApiEnvelope<T> = {
   ret: number

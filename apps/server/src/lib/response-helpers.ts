@@ -102,5 +102,8 @@ export const noContent = (c: Context) =>
   c.body(null, HttpStatusCodes.NO_CONTENT)
 
 /** 业务错误响应 */
-export const err = (c: Context, msg: string, status: ContentfulStatusCode) =>
-  c.json({ ret: -1, msg, data: null }, status)
+export const err = <const S extends ContentfulStatusCode>(
+  c: Context,
+  msg: string,
+  status: S,
+) => c.json({ ret: -1, msg, data: null }, status)
